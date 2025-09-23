@@ -3,7 +3,7 @@
 import React, { useEffect, useReducer, useRef, useState } from 'react';
 import ButtonGroup from '@/components/ButtonGroup';
 import LoadingModal from '@/components/LoadingModal';
-import { isWithinAspectRatio } from '@/lib/photo';
+import { calculateCropBox } from '@/lib/photo';
 
 const QUALIFICATION_SUFFIX = '取得';
 const STATUS_OPTIONS = [
@@ -85,6 +85,9 @@ const profileQuestionItems = [
   },
 ];
 
+const PHOTO_TARGET_RATIO = 3 / 4;
+const PHOTO_CANVAS_WIDTH = 600;
+
 const initialState = {
   personal: {
     fullName: '',
@@ -153,6 +156,110 @@ function formatQualificationDisplay(value) {
   return stripped ? `${stripped} ${QUALIFICATION_SUFFIX}` : '';
 }
 
+function downloadBase64File(base64, fileName) {
+  if (typeof window === 'undefined' || !base64) {
+    return;
+  }
+
+  const binaryString = window.atob(base64);
+  const length = binaryString.length;
+  const bytes = new Uint8Array(length);
+  for (let index = 0; index < length; index += 1) {
+    bytes[index] = binaryString.charCodeAt(index);
+  }
+
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') {
+        const [, base64 = ''] = reader.result.split(',');
+        resolve(base64);
+      } else {
+        reject(new Error('画像の変換に失敗しました。'));
+      }
+    };
+    reader.onerror = () => reject(new Error('画像の変換に失敗しました。'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function forceResizeToAspect(file, targetRatio = PHOTO_TARGET_RATIO, targetWidth = PHOTO_CANVAS_WIDTH) {
+  return new Promise((resolve, reject) => {
+    const fileUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      try {
+        const width = image.naturalWidth || image.width;
+        const height = image.naturalHeight || image.height;
+        const crop = calculateCropBox(width, height, targetRatio);
+        if (crop.sw <= 0 || crop.sh <= 0) {
+          throw new Error('画像サイズが不正です。');
+        }
+
+        const canvas = document.createElement('canvas');
+        const targetHeight = Math.round(targetWidth / targetRatio);
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const context = canvas.getContext('2d');
+        if (!context) {
+          throw new Error('キャンバスの初期化に失敗しました。');
+        }
+
+        context.drawImage(
+          image,
+          crop.sx,
+          crop.sy,
+          crop.sw,
+          crop.sh,
+          0,
+          0,
+          targetWidth,
+          targetHeight
+        );
+
+        canvas.toBlob(
+          async (blob) => {
+            try {
+              if (!blob) {
+                reject(new Error('画像の変換に失敗しました。'));
+                return;
+              }
+              const base64 = await blobToBase64(blob);
+              const previewUrl = URL.createObjectURL(blob);
+              resolve({ base64, previewUrl });
+            } catch (error) {
+              reject(error instanceof Error ? error : new Error('画像の変換に失敗しました。'));
+            }
+          },
+          'image/jpeg',
+          0.92
+        );
+      } catch (error) {
+        reject(error instanceof Error ? error : new Error('画像の加工に失敗しました。'));
+      } finally {
+        URL.revokeObjectURL(fileUrl);
+      }
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(fileUrl);
+      reject(new Error('画像の読み込みに失敗しました。'));
+    };
+    image.src = fileUrl;
+  });
+}
+
 function hasAllAnswers(items, answers) {
   return items.every((item) => (answers[item.key] || '').trim());
 }
@@ -185,7 +292,7 @@ function collectFormData(
     jobProfileAnswers = {},
     jobProfileSummary = '',
     jobDocument = '',
-    photo = { preview: '', warning: '' },
+    photo = { preview: '', warning: '', base64: '' },
   } = {}
 ) {
   const historyEntries = state.educationHistory
@@ -216,6 +323,12 @@ function collectFormData(
     })),
   ];
 
+  const normalizedPhoto = {
+    preview: photo.preview || '',
+    warning: photo.warning || '',
+    base64: photo.base64 || '',
+  };
+
   return {
     personal: { ...state.personal },
     history: historyEntries,
@@ -236,7 +349,7 @@ function collectFormData(
       },
       document: jobDocument,
     },
-    photo,
+    photo: normalizedPhoto,
   };
 }
 
@@ -272,6 +385,7 @@ export default function Home() {
   const [jobProfileSummary, setJobProfileSummary] = useState('');
   const [jobDocument, setJobDocument] = useState('');
   const [photoPreview, setPhotoPreview] = useState('');
+  const [photoBase64, setPhotoBase64] = useState('');
   const [photoWarning, setPhotoWarning] = useState('');
   const formRef = useRef(null);
   const photoUrlRef = useRef('');
@@ -321,7 +435,7 @@ export default function Home() {
             jobProfileAnswers: profileAnswers,
             jobProfileSummary,
             jobDocument,
-            photo: { preview: photoPreview, warning: photoWarning },
+            photo: { preview: photoPreview, warning: photoWarning, base64: photoBase64 },
           }),
         }),
       });
@@ -365,7 +479,7 @@ export default function Home() {
             jobProfileAnswers: profileAnswers,
             jobProfileSummary,
             jobDocument,
-            photo: { preview: photoPreview, warning: photoWarning },
+            photo: { preview: photoPreview, warning: photoWarning, base64: photoBase64 },
           }),
         }),
       });
@@ -409,7 +523,7 @@ export default function Home() {
             jobProfileAnswers: profileAnswers,
             jobProfileSummary,
             jobDocument,
-            photo: { preview: photoPreview, warning: photoWarning },
+            photo: { preview: photoPreview, warning: photoWarning, base64: photoBase64 },
           }),
         }),
       });
@@ -449,7 +563,7 @@ export default function Home() {
             jobProfileAnswers: profileAnswers,
             jobProfileSummary,
             jobDocument,
-            photo: { preview: photoPreview, warning: photoWarning },
+            photo: { preview: photoPreview, warning: photoWarning, base64: photoBase64 },
           }),
         }),
       });
@@ -478,16 +592,29 @@ export default function Home() {
         jobProfileAnswers: profileAnswers,
         jobProfileSummary,
         jobDocument,
-        photo: { preview: photoPreview, warning: photoWarning },
+        photo: { preview: photoPreview, warning: photoWarning, base64: photoBase64 },
       });
-      console.info('PDF payload preview', {
-        ...formData,
-        documentType,
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ formData, documentType }),
       });
-      alert('PDF生成は現在準備中です。');
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        throw new Error(errorBody?.error || response.statusText);
+      }
+      const data = await response.json();
+      if (!data?.base64) {
+        throw new Error('PDFデータを取得できませんでした。');
+      }
+      const fileName = documentType === 'job' ? '職務経歴書.pdf' : '履歴書.pdf';
+      downloadBase64File(data.base64, fileName);
     } catch (error) {
+      const message = error instanceof Error ? error.message : '不明なエラーが発生しました。';
       console.error('handlePdfDownload error', error);
-      alert('PDFの準備に失敗しました。');
+      alert(`PDFの生成に失敗しました。\nエラー: ${message}`);
     } finally {
       setIsLoading(false);
     }
@@ -501,7 +628,7 @@ export default function Home() {
     dispatch({ type: 'REMOVE_ENTRY', field, index });
   };
 
-  const handlePhotoChange = (event) => {
+  const handlePhotoChange = async (event) => {
     const file = event.target.files?.[0];
     if (photoUrlRef.current) {
       URL.revokeObjectURL(photoUrlRef.current);
@@ -509,31 +636,33 @@ export default function Home() {
     }
     if (!file) {
       setPhotoPreview('');
+      setPhotoBase64('');
       setPhotoWarning('');
       return;
     }
-    const objectUrl = URL.createObjectURL(file);
-    photoUrlRef.current = objectUrl;
-    setPhotoPreview(objectUrl);
-    setPhotoWarning('');
-    const image = new Image();
-    image.onload = () => {
-      const isValid = isWithinAspectRatio(
-        image.naturalWidth || image.width,
-        image.naturalHeight || image.height,
-        3 / 4,
-        0.02
-      );
-      if (!isValid) {
-        setPhotoWarning('JIS規格（3:4）に近い比率の画像をアップロードしてください。');
-      } else {
-        setPhotoWarning('');
+
+    try {
+      const { base64, previewUrl } = await forceResizeToAspect(file);
+      if (!base64) {
+        throw new Error('画像の変換に失敗しました。');
       }
-    };
-    image.onerror = () => {
-      setPhotoWarning('画像の読み込みに失敗しました。別のファイルをお試しください。');
-    };
-    image.src = objectUrl;
+      photoUrlRef.current = previewUrl;
+      setPhotoPreview(previewUrl);
+      setPhotoBase64(base64);
+      setPhotoWarning('');
+    } catch (error) {
+      console.error('handlePhotoChange error', error);
+      if (photoInputRef.current) {
+        photoInputRef.current.value = '';
+      }
+      if (photoUrlRef.current) {
+        URL.revokeObjectURL(photoUrlRef.current);
+        photoUrlRef.current = '';
+      }
+      setPhotoPreview('');
+      setPhotoBase64('');
+      setPhotoWarning('画像の加工に失敗しました。別のファイルをお試しください。');
+    }
   };
 
   const handlePhotoRemove = () => {
@@ -545,6 +674,7 @@ export default function Home() {
       photoInputRef.current.value = '';
     }
     setPhotoPreview('');
+    setPhotoBase64('');
     setPhotoWarning('');
   };
 

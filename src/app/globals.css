@@ -431,6 +431,8 @@ select {
   font-family: inherit;
   color: #0f172a;
   background-color: #ffffff;
+  min-height: 44px;
+  width: 100%;
 }
 
 input:focus,
@@ -660,4 +662,42 @@ textarea {
 
 .photo-actions {
   margin-top: 12px;
+}
+
+/* === Mobile first overrides === */
+html,
+body {
+  overflow-x: hidden;
+}
+
+@media (max-width: 480px) {
+  .container {
+    max-width: 100%;
+    padding: 12px;
+  }
+
+  fieldset {
+    padding: 12px;
+  }
+
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .entry-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .entry-group > * {
+    width: 100%;
+  }
+
+  .button-group {
+    position: sticky;
+    bottom: 12px;
+    background: #ffffff;
+    padding: 8px 0;
+    z-index: 1;
+  }
 }
