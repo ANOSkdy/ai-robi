@@ -1,5 +1,5 @@
-import { Buffer } from 'node:buffer';
 import { NextResponse } from 'next/server';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
 
 export const runtime = 'nodejs';
 
@@ -35,8 +35,19 @@ type PhotoSection = {
   warning?: string;
 };
 
+type HistoryEntry = {
+  year?: string;
+  month?: string;
+  description?: string;
+  status?: string;
+  type?: string;
+};
+
 type CollectedFormData = {
   personal?: PersonalSection;
+  history?: HistoryEntry[];
+  histories?: HistoryEntry[];
+  qualifications?: HistoryEntry[];
   resume?: ResumeSection;
   job?: JobSection;
   photo?: PhotoSection;
@@ -59,14 +70,10 @@ function normalizeDocumentType(documentType: string): NormalizedDocumentType | n
   return null;
 }
 
-function escapePdfText(text: string): string {
-  return text.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
-}
-
 function wrapText(text: string, width = DEFAULT_LINE_WIDTH): string[] {
   const trimmed = text ?? '';
-  if (trimmed.length === 0) {
-    return [''];
+  if (!trimmed) {
+    return [];
   }
   const characters = Array.from(trimmed);
   const lines: string[] = [];
@@ -79,13 +86,44 @@ function wrapText(text: string, width = DEFAULT_LINE_WIDTH): string[] {
 function collapseEmptyLines(lines: string[]): string[] {
   const result: string[] = [];
   for (const line of lines) {
-    const lastLine = result.length > 0 ? result[result.length - 1] : undefined;
-    if (line.trim() === '' && lastLine?.trim() === '') {
+    const previous = result[result.length - 1];
+    if (line.trim() === '' && (!previous || previous.trim() === '')) {
       continue;
     }
     result.push(line);
   }
   return result;
+}
+
+function formatHistoryEntry(entry: HistoryEntry): string {
+  const pieces: string[] = [];
+  if (entry.year) {
+    pieces.push(`${entry.year}年`);
+  }
+  if (entry.month) {
+    pieces.push(`${entry.month}月`);
+  }
+  if (entry.status) {
+    pieces.push(`【${entry.status}】`);
+  }
+  if (entry.description) {
+    pieces.push(entry.description);
+  }
+  return pieces.join(' ').trim();
+}
+
+function collectHistoryEntries(data: CollectedFormData): HistoryEntry[] {
+  if (Array.isArray(data.histories) && data.histories.length > 0) {
+    return data.histories;
+  }
+  const combined: HistoryEntry[] = [];
+  if (Array.isArray(data.history)) {
+    combined.push(...data.history);
+  }
+  if (Array.isArray(data.qualifications)) {
+    combined.push(...data.qualifications);
+  }
+  return combined;
 }
 
 function createContentLines(data: CollectedFormData, type: NormalizedDocumentType): string[] {
@@ -95,7 +133,7 @@ function createContentLines(data: CollectedFormData, type: NormalizedDocumentTyp
     timeStyle: 'short',
     timeZone: 'Asia/Tokyo',
   }).format(new Date());
-  lines.push(...wrapText(`生成日時: ${now}`, 40));
+  lines.push(`生成日時: ${now}`);
 
   const personal = data.personal ?? {};
   const personalEntries: string[] = [];
@@ -121,6 +159,18 @@ function createContentLines(data: CollectedFormData, type: NormalizedDocumentTyp
     lines.push('');
     personalEntries.forEach((entry) => {
       lines.push(...wrapText(entry, 40));
+    });
+  }
+
+  const historyEntries = collectHistoryEntries(data);
+  if (historyEntries.length > 0) {
+    lines.push('');
+    lines.push('学歴・職歴 / 免許・資格');
+    historyEntries.forEach((entry) => {
+      const formatted = formatHistoryEntry(entry);
+      if (formatted) {
+        lines.push(...wrapText(formatted, 40));
+      }
     });
   }
 
@@ -158,55 +208,47 @@ function createContentLines(data: CollectedFormData, type: NormalizedDocumentTyp
     }
   }
 
+  if (data.photo?.warning) {
+    lines.push('');
+    lines.push('写真に関する注意');
+    lines.push(...wrapText(data.photo.warning));
+  }
+
   return collapseEmptyLines(lines);
 }
 
-function buildPdfBase64(title: string, lines: string[]): string {
-  const sanitizedLines = collapseEmptyLines(lines);
-  const textOps: string[] = ['BT', '/F1 24 Tf', '72 800 Td', `(${escapePdfText(title)}) Tj`];
-  if (sanitizedLines.length > 0) {
-    textOps.push('/F1 12 Tf');
-    textOps.push('0 -32 Td');
-    sanitizedLines.forEach((line, index) => {
-      const content = line.trim() === '' ? ' ' : line;
-      textOps.push(`(${escapePdfText(content)}) Tj`);
-      if (index < sanitizedLines.length - 1) {
-        textOps.push('0 -18 Td');
-      }
+async function buildPdfBase64(title: string, lines: string[]): Promise<string> {
+  const pdfDoc = await PDFDocument.create();
+  const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const fontSize = 12;
+  const lineHeight = fontSize * 1.5;
+  const margin = 48;
+  let page = pdfDoc.addPage([595, 842]);
+  let cursorY = page.getHeight() - margin;
+
+  const drawLine = (text: string, font = regularFont, size = fontSize) => {
+    if (cursorY <= margin) {
+      page = pdfDoc.addPage([595, 842]);
+      cursorY = page.getHeight() - margin;
+    }
+    page.drawText(text, {
+      x: margin,
+      y: cursorY,
+      size,
+      font,
     });
-  }
-  textOps.push('ET');
-  const stream = textOps.join('\n');
-  const streamBuffer = Buffer.from(stream, 'utf8');
-
-  const header = '%PDF-1.4\n';
-  let body = '';
-  const offsets: number[] = [];
-
-  const appendObject = (content: string) => {
-    const offset = header.length + Buffer.byteLength(body, 'utf8');
-    offsets.push(offset);
-    body += content;
+    cursorY -= lineHeight;
   };
 
-  appendObject('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
-  appendObject('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
-  appendObject(
-    '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n'
-  );
-  appendObject(`4 0 obj\n<< /Length ${streamBuffer.length} >>\nstream\n${stream}\nendstream\nendobj\n`);
-  appendObject('5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n');
+  drawLine(title, boldFont, 24);
+  cursorY -= lineHeight / 2;
 
-  const xrefOffset = header.length + Buffer.byteLength(body, 'utf8');
-  let xref = `xref\n0 ${offsets.length + 1}\n`;
-  xref += '0000000000 65535 f \n';
-  offsets.forEach((offset) => {
-    xref += `${offset.toString().padStart(10, '0')} 00000 n \n`;
+  collapseEmptyLines(lines).forEach((line) => {
+    drawLine(line.trim() === '' ? ' ' : line);
   });
-  const trailer = `trailer\n<< /Size ${offsets.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
 
-  const pdfContent = header + body + xref + trailer;
-  return Buffer.from(pdfContent, 'utf8').toString('base64');
+  return pdfDoc.saveAsBase64({ dataUri: false });
 }
 
 export async function POST(request: Request) {
@@ -214,29 +256,30 @@ export async function POST(request: Request) {
   try {
     payload = (await request.json()) as GeneratePdfPayload;
   } catch (error) {
-    console.error('generate-pdf parse error', error);
-    return NextResponse.json({ error: 'JSONの解析に失敗しました。' }, { status: 400 });
+    console.error('generate-pdf: failed to parse request body', error);
+    return NextResponse.json({ error: 'Invalid JSON payload.' }, { status: 400 });
   }
 
-  const { formData, documentType } = payload ?? {};
-  if (!documentType || typeof documentType !== 'string') {
-    return NextResponse.json({ error: 'documentType が不正です。' }, { status: 400 });
-  }
-
-  const normalizedType = normalizeDocumentType(documentType);
+  const { formData = {}, documentType = '' } = payload ?? {};
+  const normalizedType =
+    typeof documentType === 'string' ? normalizeDocumentType(documentType) : null;
   if (!normalizedType) {
-    return NextResponse.json({ error: 'documentType が不正です。' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Invalid document type. Use "resume" or "job".' },
+      { status: 400 }
+    );
   }
-
-  const data: CollectedFormData = formData && typeof formData === 'object' ? formData : {};
 
   try {
-    const contentLines = createContentLines(data, normalizedType);
-    const title = normalizedType === 'job' ? 'AI-ROBI 職務経歴書' : 'AI-ROBI 履歴書';
-    const base64 = buildPdfBase64(title, contentLines);
+    const lines = createContentLines(formData, normalizedType);
+    const title = normalizedType === 'resume' ? 'AI-ROBI 履歴書' : 'AI-ROBI 職務経歴書';
+    const base64 = await buildPdfBase64(title, lines);
     return NextResponse.json({ base64 });
   } catch (error) {
-    console.error('generate-pdf build error', error);
-    return NextResponse.json({ error: 'PDFの生成に失敗しました。' }, { status: 500 });
+    console.error('generate-pdf: failed to build document', error);
+    return NextResponse.json(
+      { error: 'Failed to generate PDF. Please try again later.' },
+      { status: 500 }
+    );
   }
 }

@@ -14,6 +14,10 @@ describe('isWithinAspectRatio', () => {
     expect(isWithinAspectRatio(280, 400)).toBe(false);
   });
 
+  it('allows stricter tolerance when specified', () => {
+    expect(isWithinAspectRatio(303, 400, 3 / 4, 0)).toBe(false);
+  });
+
   it('returns false for invalid dimensions', () => {
     expect(isWithinAspectRatio(0, 400)).toBe(false);
     expect(isWithinAspectRatio(300, 0)).toBe(false);
