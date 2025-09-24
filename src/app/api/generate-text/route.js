@@ -1,51 +1,54 @@
 import { NextResponse } from 'next/server';
-// Google AI SDKをインポート
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Geminiクライアントを初期化
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+export const runtime = 'nodejs';
 
-// POSTリクエストを処理する関数
+const MODEL = process.env.GOOGLE_GENAI_MODEL || 'gemini-1.5-flash';
+const API_KEY = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+
+function buildFallbackPrompt(keywords = '', context = {}) {
+  const histories = Array.isArray(context?.histories) ? context.histories : [];
+  const workHistoryText = histories
+    .filter((history) => history?.description)
+    .map((history) => `${history.year || ''}年${history.month || ''}月 ${history.description}`)
+    .join('\n');
+
+  return `あなたは優秀なキャリアアドバイザーです。\n以下の情報を基に、日本の就職活動で通用する、自然で説得力のある「自己PR」を200〜300字程度で作成してください。\n\n# 職務経歴\n${workHistoryText || '記載なし'}\n\n# アピールしたいキーワード\n${keywords || '指定なし'}`;
+}
+
 export async function POST(request) {
   try {
-    // リクエストボディからキーワードと職歴コンテキストを取得
-    const { keywords, context } = await request.json();
+    const { prompt = '', keywords = '', context = {} } = await request.json();
+    let preparedPrompt = (prompt || '').trim();
 
-    if (!keywords) {
-      return NextResponse.json({ error: 'キーワードが入力されていません。' }, { status: 400 });
+    if (!preparedPrompt) {
+      if (!keywords.trim()) {
+        return NextResponse.json(
+          { error: 'プロンプトが指定されていません。' },
+          { status: 400 }
+        );
+      }
+      preparedPrompt = buildFallbackPrompt(keywords, context);
     }
 
-    // モデルを選択
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    if (!API_KEY) {
+      return NextResponse.json(
+        { error: 'Gemini APIキーが未設定です。' },
+        { status: 500 }
+      );
+    }
 
-    // 職歴情報を整形
-    const workHistoryText = context.histories
-      .filter(h => h.type === 'entry' && h.description)
-      .map(h => `${h.year}年${h.month}月 ${h.description}`)
-      .join('\n');
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ model: MODEL });
+    const result = await model.generateContent(preparedPrompt);
+    const generatedText = result?.response?.text?.() ?? '';
 
-    // Geminiに送信するプロンプト（指示文）を作成
-    const prompt = `
-      あなたは優秀なキャリアアドバイザーです。
-      以下の情報を基に、日本の就職活動で通用する、自然で説得力のある「自己PR」を200〜300字程度で作成してください。
-
-      # 職務経歴
-      ${workHistoryText || '記載なし'}
-
-      # アピールしたいキーワード
-      ${keywords}
-    `;
-
-    // Gemini APIを呼び出して文章を生成
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const generatedText = response.text();
-    
-    // 生成されたテキストをクライアントに返す
     return NextResponse.json({ generatedText });
-
   } catch (error) {
-    console.error('Gemini APIエラー:', error);
-    return NextResponse.json({ error: 'AI文章の生成中にエラーが発生しました。' }, { status: 500 });
+    console.error('generate-text error', error);
+    return NextResponse.json(
+      { error: 'AI文章の生成中にエラーが発生しました。' },
+      { status: 500 }
+    );
   }
 }
