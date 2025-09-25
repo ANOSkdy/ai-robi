@@ -102,11 +102,8 @@ export const POST = async (request: NextRequest) => {
     });
 
     const filename = buildFilename(documentType);
-    const arrayBuffer = pdfBuffer.buffer.slice(
-      pdfBuffer.byteOffset,
-      pdfBuffer.byteOffset + pdfBuffer.byteLength
-    );
-    return new NextResponse(arrayBuffer, {
+    const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+    return new NextResponse(blob, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
