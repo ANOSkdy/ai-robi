@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>履歴書</title>
+    <style>
+      @font-face {
+        font-family: 'NotoSansJP';
+        src: url('/fonts/NotoSansJP-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      body {
+        font-family: 'NotoSansJP', system-ui, sans-serif;
+        font-size: 12pt;
+        margin: 24px;
+        color: #111;
+        line-height: 1.6;
+      }
+
+      h1,
+      h2 {
+        text-align: left;
+      }
+
+      h1 {
+        font-size: 20pt;
+        text-align: center;
+        margin-bottom: 16px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 16px;
+      }
+
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 4px 6px;
+        vertical-align: top;
+      }
+
+      th {
+        width: 30%;
+        background: #f5f5f5;
+      }
+
+      p {
+        margin: 4px 0;
+      }
+
+      .section {
+        page-break-inside: avoid;
+        margin-bottom: 24px;
+      }
+
+      .histories td:first-child,
+      .licenses td:first-child {
+        width: 15%;
+      }
+
+      .histories td:nth-child(2),
+      .licenses td:nth-child(2) {
+        width: 15%;
+      }
+
+      .note {
+        font-size: 10pt;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>履歴書</h1>
+
+    <section class="section">
+      <table>
+        <tbody>
+          <tr>
+            <th>氏名</th>
+            <td>{{profile.name}}</td>
+          </tr>
+          <tr>
+            <th>ふりがな</th>
+            <td>{{profile.nameFurigana}}</td>
+          </tr>
+          <tr>
+            <th>生年月日</th>
+            <td>
+              {{profile.birthdate.year}}年{{profile.birthdate.month}}月{{profile.birthdate.day}}日
+            </td>
+          </tr>
+          <tr>
+            <th>住所</th>
+            <td>{{profile.address}}</td>
+          </tr>
+          <tr>
+            <th>電話番号</th>
+            <td>{{profile.phone}}</td>
+          </tr>
+          <tr>
+            <th>E-mail</th>
+            <td>{{profile.email}}</td>
+          </tr>
+        </tbody>
+      </table>
+      {{#if profile.contact}}
+        <p class="note">連絡先: {{profile.contact}}</p>
+      {{/if}}
+    </section>
+
+    <section class="section">
+      <h2>学歴・職歴</h2>
+      <table class="histories">
+        <tbody>
+          {{#each histories}}
+            <tr>
+              <td>{{year}}</td>
+              <td>{{month}}</td>
+              <td>{{description}}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>免許・資格</h2>
+      <table class="licenses">
+        <tbody>
+          {{#each licenses}}
+            <tr>
+              <td>{{year}}</td>
+              <td>{{month}}</td>
+              <td>{{description}}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>志望動機</h2>
+      <p>{{motivation}}</p>
+    </section>
+
+    <section class="section">
+      <h2>自己PR</h2>
+      <p>{{selfPromotion}}</p>
+    </section>
+
+    <section class="section">
+      <h2>本人希望記入欄</h2>
+      <p>{{requests}}</p>
+    </section>
+  </body>
+</html>

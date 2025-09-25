@@ -29,8 +29,10 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## PDF 生成ワークフロー
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- クライアントは `window.google?.script?.run` が利用可能な場合は GAS 側の `generatePdfFromDoc` を呼び出し、それ以外は Next.js の `/api/pdf` に POST します。
+- `/api/pdf` は `puppeteer-core` と `@sparticuz/chromium` を利用して HTML テンプレート (`templates/resume.html`, `templates/cv.html`) を PDF へ変換します。
+- テンプレートは Handlebars でレンダリングされ、日本語フォント `public/fonts/NotoSansJP-Regular.ttf` を読み込みます。フォントファイルを配置できない場合は同名ファイルを配置してください。
+- ローカル開発では `CHROME_EXECUTABLE_PATH` 環境変数に Chromium/Chrome のパスを指定することでブラウザが起動します。Vercel 環境では自動で Lambda 対応の Chromium が利用されます。
+- 生成された PDF は `Content-Disposition: attachment` でストリーム返却され、フロントエンドで Blob + `URL.createObjectURL` を用いたダウンロードに切り替えています。
