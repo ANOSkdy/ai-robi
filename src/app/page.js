@@ -402,6 +402,7 @@ export default function Home() {
   const printContentRef = useRef(null);
   const photoUrlRef = useRef('');
   const photoInputRef = useRef(null);
+  const placeholderRollbackRef = useRef(null);
 
   useEffect(() => {
     return () => {
@@ -411,6 +412,28 @@ export default function Home() {
       }
     };
   }, []);
+
+  const materializePlaceholders = (rootElement) => {
+    if (!rootElement) {
+      return () => {};
+    }
+    const patched = [];
+    const nodes = rootElement.querySelectorAll('[data-print-placeholder]');
+    nodes.forEach((element) => {
+      const current = (element.textContent || '').trim();
+      if (current.length > 0) {
+        return;
+      }
+      const placeholder = element.getAttribute('data-print-placeholder') || '（未入力）';
+      patched.push({ element, value: element.textContent ?? '' });
+      element.textContent = placeholder;
+    });
+    return () => {
+      patched.forEach(({ element, value }) => {
+        element.textContent = value;
+      });
+    };
+  };
 
   useReactToPrint({
     contentRef: printContentRef,
@@ -447,8 +470,25 @@ export default function Home() {
           console.warn('fonts.ready rejected', error);
         }
       }
+      if (placeholderRollbackRef.current) {
+        try {
+          placeholderRollbackRef.current();
+        } finally {
+          placeholderRollbackRef.current = null;
+        }
+      }
+      placeholderRollbackRef.current = materializePlaceholders(root);
       if (typeof window !== 'undefined' && window.requestAnimationFrame) {
         await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+      }
+    },
+    onAfterPrint: () => {
+      if (placeholderRollbackRef.current) {
+        try {
+          placeholderRollbackRef.current();
+        } finally {
+          placeholderRollbackRef.current = null;
+        }
       }
     },
   });
