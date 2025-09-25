@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useReducer, useRef, useState } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import ButtonGroup from '@/components/ButtonGroup';
 import LoadingModal from '@/components/LoadingModal';
 import { calculateCropBox } from '@/lib/photo';
@@ -398,6 +399,7 @@ export default function Home() {
   const [photoBase64, setPhotoBase64] = useState('');
   const [photoWarning, setPhotoWarning] = useState('');
   const formRef = useRef(null);
+  const printContentRef = useRef(null);
   const photoUrlRef = useRef('');
   const photoInputRef = useRef(null);
 
@@ -409,6 +411,47 @@ export default function Home() {
       }
     };
   }, []);
+
+  useReactToPrint({
+    contentRef: printContentRef,
+    documentTitle: activeTab === 'job' ? '職務経歴書' : '履歴書',
+    removeAfterPrint: true,
+    copyStyles: true,
+    pageStyle: '',
+    onBeforeGetContent: async () => {
+      const root = printContentRef.current;
+      if (!root) {
+        return;
+      }
+      const images = Array.from(root.querySelectorAll('img'));
+      await Promise.all(
+        images.map((img) => {
+          if (img.complete) {
+            return Promise.resolve();
+          }
+          return new Promise((resolve) => {
+            const clear = () => {
+              img.onload = null;
+              img.onerror = null;
+              resolve();
+            };
+            img.onload = clear;
+            img.onerror = clear;
+          });
+        })
+      );
+      if (typeof document !== 'undefined' && document.fonts?.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (error) {
+          console.warn('fonts.ready rejected', error);
+        }
+      }
+      if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+        await new Promise((resolve) => window.requestAnimationFrame(() => resolve()));
+      }
+    },
+  });
 
   const handleConfirm = () => {
     if (!formRef.current) return;
@@ -1302,6 +1345,7 @@ export default function Home() {
         id="result-section"
         aria-hidden={screen !== 'result'}
         style={{ display: screen === 'result' ? 'block' : 'none' }}
+        ref={printContentRef}
       >
         <fieldset>
           <legend>AI生成結果</legend>

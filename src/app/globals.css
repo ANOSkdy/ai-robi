@@ -18,7 +18,8 @@ body {
 
 * { box-sizing: border-box; }
 
-.resume-container {
+.resume-container,
+.job-container {
   width: 840px;
   background-color: #fff;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -357,18 +358,73 @@ body {
 /* ======================
    印刷
    ====================== */
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
 @media print {
-  .page-header, .download-btn, .row-controls { display: none !important; }
-  .resume-container { box-shadow: none !important; }
-  .p-birthdate-value { font-size: 12px !important; gap: 0.5em !important; }
-  .name-uppercase { text-transform: uppercase !important; }
-  .ai-controls { display: none !important; }
-  .photo-upload-btn, .photo-delete-btn { display: none !important; }
-  /* プレースホルダーは印刷しない */
-  [contentEditable="true"]:empty::before,
-  .h-desc-input[contentEditable="true"]:empty::before,
-  .date-field > [contentEditable="true"]:empty::before { content: none !important; }
-  [data-placeholder]::before { color: transparent !important; }
+  html, body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-header,
+  .download-btn,
+  .row-controls,
+  .ai-controls,
+  .photo-upload-btn,
+  .photo-delete-btn {
+    display: none !important;
+  }
+
+  .resume-container,
+  .job-container {
+    box-shadow: none !important;
+    width: 190mm;
+    min-height: 273mm;
+    break-inside: avoid;
+  }
+
+  .p-birthdate-value {
+    font-size: 12px !important;
+    gap: 0.5em !important;
+  }
+
+  .name-uppercase {
+    text-transform: uppercase !important;
+  }
+
+  .print-ph[contenteditable="true"]:empty::after,
+  .print-ph:empty::after {
+    content: attr(data-print-placeholder);
+    color: #9ca3af;
+    opacity: 0.9;
+    white-space: pre-wrap;
+  }
+
+  .print-underline {
+    border-bottom: 1px solid #888;
+    min-height: 1.2em;
+    display: inline-block;
+  }
+
+  table,
+  tr,
+  td,
+  th,
+  h1,
+  h2,
+  h3,
+  .section,
+  .entry-row {
+    break-inside: avoid;
+  }
+
+  img {
+    break-inside: avoid;
+    max-width: 100%;
+  }
 }
 /* 枠内アップロードUIは使わないため常に無効化しておく（保険） */
 .p-photo .photo-upload-btn,

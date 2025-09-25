@@ -137,25 +137,31 @@ const ResumePreview = React.forwardRef((props, ref) => {
         <h1>履 歴 書</h1>
         <div className="date-field horizontal-value">
           <div
+            className="print-ph"
             contentEditable
             suppressContentEditableWarning
             onBlur={(e) => updateDate('year', e.currentTarget.innerText)}
+            data-print-placeholder="----"
           >
             {profile.date.year}
           </div>
           年
           <div
+            className="print-ph"
             contentEditable
             suppressContentEditableWarning
             onBlur={(e) => updateDate('month', e.currentTarget.innerText)}
+            data-print-placeholder="--"
           >
             {profile.date.month}
           </div>
           月
           <div
+            className="print-ph"
             contentEditable
             suppressContentEditableWarning
             onBlur={(e) => updateDate('day', e.currentTarget.innerText)}
+            data-print-placeholder="--"
           >
             {profile.date.day}
           </div>
@@ -168,13 +174,14 @@ const ResumePreview = React.forwardRef((props, ref) => {
           <label>ふりがな</label>
         </div>
         <div
-          className="cell p-furigana-value single-line-input"
+          className="cell p-furigana-value single-line-input print-ph"
           contentEditable
           suppressContentEditableWarning
           onBlur={(e) =>
             updateProfile('nameFurigana', e.currentTarget.innerText)
           }
           data-placeholder="りれき しょうこ"
+          data-print-placeholder="（ふりがな未入力）"
         >
           {profile.nameFurigana}
         </div>
@@ -204,7 +211,7 @@ const ResumePreview = React.forwardRef((props, ref) => {
         </div>
         {/* 氏名：入力は自然に、フォーカスアウトで大文字保存 */}
         <div
-          className="cell p-name-value single-line-input name-uppercase"
+          className="cell p-name-value single-line-input name-uppercase print-ph"
           contentEditable
           suppressContentEditableWarning
           onBlur={(e) => {
@@ -213,35 +220,42 @@ const ResumePreview = React.forwardRef((props, ref) => {
             e.currentTarget.innerText = v;
           }}
           data-placeholder="履歴 証子"
+          data-print-placeholder="（氏名未入力）"
         >
           {profile.name}
         </div>
 
         <div className="cell p-birthdate-value horizontal-value">
           <div
+            className="print-ph"
             contentEditable
             suppressContentEditableWarning
             onBlur={(e) =>
               updateBirthdate('year', e.currentTarget.innerText)
             }
+            data-print-placeholder="----"
           >
             {profile.birthdate.year}
           </div>
           年
           <div
+            className="print-ph"
             contentEditable
             suppressContentEditableWarning
             onBlur={(e) =>
               updateBirthdate('month', e.currentTarget.innerText)
             }
+            data-print-placeholder="--"
           >
             {profile.birthdate.month}
           </div>
           月
           <div
+            className="print-ph"
             contentEditable
             suppressContentEditableWarning
             onBlur={(e) => updateBirthdate('day', e.currentTarget.innerText)}
+            data-print-placeholder="--"
           >
             {profile.birthdate.day}
           </div>
@@ -252,11 +266,12 @@ const ResumePreview = React.forwardRef((props, ref) => {
           <label>現住所</label>
         </div>
         <div
-          className="cell p-address-value single-line-input"
+          className="cell p-address-value single-line-input print-ph"
           contentEditable
           suppressContentEditableWarning
           onBlur={(e) => updateProfile('address', e.currentTarget.innerText)}
           data-placeholder="〒100-0001 東京都千代田区千代田1-1"
+          data-print-placeholder="（住所未入力）"
         >
           {profile.address}
         </div>
@@ -265,11 +280,12 @@ const ResumePreview = React.forwardRef((props, ref) => {
           <label>※連絡先</label>
         </div>
         <div
-          className="cell p-contact-value single-line-input"
+          className="cell p-contact-value single-line-input print-ph"
           contentEditable
           suppressContentEditableWarning
           onBlur={(e) => updateProfile('contact', e.currentTarget.innerText)}
           data-placeholder="同上"
+          data-print-placeholder="（連絡先未入力）"
         >
           {profile.contact}
         </div>
@@ -278,10 +294,11 @@ const ResumePreview = React.forwardRef((props, ref) => {
           <label>電話</label>
         </div>
         <div
-          className="cell p-tel-value single-line-input"
+          className="cell p-tel-value single-line-input print-ph"
           contentEditable
           suppressContentEditableWarning
           onBlur={(e) => updateProfile('phone', e.currentTarget.innerText)}
+          data-print-placeholder="（電話番号未入力）"
         >
           {profile.phone}
         </div>
@@ -290,10 +307,11 @@ const ResumePreview = React.forwardRef((props, ref) => {
           <label>Email</label>
         </div>
         <div
-          className="cell p-email-value single-line-input"
+          className="cell p-email-value single-line-input print-ph"
           contentEditable
           suppressContentEditableWarning
           onBlur={(e) => updateProfile('email', e.currentTarget.innerText)}
+          data-print-placeholder="（メール未入力）"
         >
           {profile.email}
         </div>
@@ -311,22 +329,24 @@ const ResumePreview = React.forwardRef((props, ref) => {
           return (
             <React.Fragment key={entry.id}>
               <div
-                className="cell h-year dynamic-row"
+                className={`cell h-year dynamic-row${editable ? ' print-ph' : ''}`}
                 contentEditable={editable}
                 suppressContentEditableWarning
                 onBlur={(e) =>
                   updateHistory(entry.id, 'year', e.currentTarget.innerText)
                 }
+                data-print-placeholder={editable ? '----' : undefined}
               >
                 {entry.year}
               </div>
               <div
-                className="cell h-month"
+                className={`cell h-month${editable ? ' print-ph' : ''}`}
                 contentEditable={editable}
                 suppressContentEditableWarning
                 onBlur={(e) =>
                   updateHistory(entry.id, 'month', e.currentTarget.innerText)
                 }
+                data-print-placeholder={editable ? '--' : undefined}
               >
                 {entry.month}
               </div>
@@ -334,7 +354,7 @@ const ResumePreview = React.forwardRef((props, ref) => {
                 {editable ? (
                   <>
                     <div
-                      className="h-desc-input"
+                      className="h-desc-input print-ph"
                       contentEditable
                       suppressContentEditableWarning
                       onBlur={(e) =>
@@ -345,6 +365,7 @@ const ResumePreview = React.forwardRef((props, ref) => {
                         )
                       }
                       data-placeholder="〇〇大学〇〇学部 入学"
+                      data-print-placeholder="（学歴・職歴 未入力）"
                     >
                       {entry.description}
                     </div>
@@ -380,27 +401,30 @@ const ResumePreview = React.forwardRef((props, ref) => {
         {licenses.map((entry, index) => (
           <React.Fragment key={entry.id}>
             <div
-              className="cell h-year dynamic-row"
+              className="cell h-year dynamic-row print-ph"
               contentEditable
               suppressContentEditableWarning
               onBlur={(e) =>
                 updateLicense(entry.id, 'year', e.currentTarget.innerText)
               }
+              data-print-placeholder="----"
             >
               {entry.year}
             </div>
             <div
-              className="cell h-month"
+              className="cell h-month print-ph"
               contentEditable
               suppressContentEditableWarning
               onBlur={(e) =>
                 updateLicense(entry.id, 'month', e.currentTarget.innerText)
               }
+              data-print-placeholder="--"
             >
               {entry.month}
             </div>
             <div className="cell h-desc">
               <div
+                className="print-ph"
                 style={{ width: '100%' }}
                 contentEditable
                 suppressContentEditableWarning
@@ -412,6 +436,7 @@ const ResumePreview = React.forwardRef((props, ref) => {
                   )
                 }
                 data-placeholder="普通自動車第一種運転免許 取得"
+                data-print-placeholder="（免許・資格 未入力）"
               >
                 {entry.description}
               </div>
@@ -438,11 +463,12 @@ const ResumePreview = React.forwardRef((props, ref) => {
       <div className="free-text-grid motivation-grid">
         <div className="cell f-header">志望の動機</div>
         <div
-          className="cell f-content"
+          className="cell f-content print-ph"
           contentEditable
           suppressContentEditableWarning
           onBlur={(e) => updateMotivation(e.currentTarget.innerText)}
           data-placeholder="貴社の〇〇というビジョンに共感し…"
+          data-print-placeholder="（志望動機 未入力）"
         >
           {motivation}
         </div>
@@ -471,11 +497,12 @@ const ResumePreview = React.forwardRef((props, ref) => {
       <div className="free-text-grid requests-grid">
         <div className="cell f-header">自己PR、本人希望記入欄など</div>
         <div
-          className="cell f-content"
+          className="cell f-content print-ph"
           contentEditable
           suppressContentEditableWarning
           onBlur={(e) => updateSelfPromotion(e.currentTarget.innerText)}
           data-placeholder="私の強みは〇〇です…"
+          data-print-placeholder="（自己PR・本人希望 未入力）"
         >
           {selfPromotion}
         </div>

@@ -104,7 +104,7 @@ const JobPreview = React.forwardRef((props, ref) => {
   };
 
   return (
-    <div ref={ref} className="resume-container">
+    <div ref={ref} className="job-container">
       <div className="title-row">
         <h1>職 務 経 歴 書</h1>
         <div />
@@ -113,11 +113,12 @@ const JobPreview = React.forwardRef((props, ref) => {
       <div className="free-text-grid motivation-grid">
         <div className="cell f-header">職務経歴要約</div>
         <div
-          className="cell f-content"
+          className="cell f-content print-ph"
           contentEditable
           suppressContentEditableWarning
           onBlur={(e) => setJobSummary(e.currentTarget.innerText)}
           data-placeholder="履歴書の職歴を参考に、要約を記載します（AIボタンでも自動生成できます）"
+          data-print-placeholder="（職務経歴要約 未入力）"
         >
           {jobSummary}
         </div>
@@ -127,11 +128,12 @@ const JobPreview = React.forwardRef((props, ref) => {
         <div className="free-text-grid requests-grid" key={company + idx}>
           <div className="cell f-header">職務経歴詳細（{company}）</div>
           <div
-            className="cell f-content"
+            className="cell f-content print-ph"
             contentEditable
             suppressContentEditableWarning
             onBlur={(e) => upsertJobDetail(idx, e.currentTarget.innerText)}
             data-placeholder="こちらに当該企業での担当業務・実績・工夫・成果などを記載してください"
+            data-print-placeholder="（職務経歴詳細 未入力）"
           >
             {jobDetails?.[idx]?.detail || ''}
           </div>
