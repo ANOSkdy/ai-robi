@@ -156,16 +156,26 @@ function formatQualificationDisplay(value) {
   return stripped ? `${stripped} ${QUALIFICATION_SUFFIX}` : '';
 }
 
-function downloadBase64File(base64, fileName) {
-  if (typeof window === 'undefined' || !base64) {
+function downloadPdfFile(data, fileName) {
+  if (typeof window === 'undefined' || !data) {
     return;
   }
 
-  const binaryString = window.atob(base64);
-  const length = binaryString.length;
-  const bytes = new Uint8Array(length);
-  for (let index = 0; index < length; index += 1) {
-    bytes[index] = binaryString.charCodeAt(index);
+  let bytes;
+  if (typeof data === 'string') {
+    const binaryString = window.atob(data);
+    const length = binaryString.length;
+    bytes = new Uint8Array(length);
+    for (let index = 0; index < length; index += 1) {
+      bytes[index] = binaryString.charCodeAt(index);
+    }
+  } else if (data instanceof Uint8Array) {
+    bytes = data;
+  } else if (data instanceof ArrayBuffer) {
+    bytes = new Uint8Array(data);
+  } else {
+    console.warn('downloadPdfFile: unsupported data type');
+    return;
   }
 
   const blob = new Blob([bytes], { type: 'application/pdf' });
@@ -583,6 +593,12 @@ export default function Home() {
 
   const handlePdfDownload = async (documentType) => {
     setIsLoading(true);
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller
+      ? setTimeout(() => {
+          controller.abort();
+        }, 20000)
+      : null;
     try {
       const formData = collectFormData(appState, {
         resumeAnswers,
@@ -594,28 +610,57 @@ export default function Home() {
         jobDocument,
         photo: { preview: photoPreview, warning: photoWarning, base64: photoBase64 },
       });
-      const response = await fetch('/api/generate-pdf', {
+      const requestType = documentType === 'job' ? 'cv' : 'resume';
+      if (typeof window !== 'undefined' && window.google?.script?.run) {
+        const base64 = await new Promise((resolve, reject) => {
+          try {
+            window.google.script.run
+              .withSuccessHandler((value) => resolve(value))
+              .withFailureHandler((reason) => reject(reason))
+              .generatePdfFromDoc(formData, requestType);
+          } catch (runError) {
+            reject(runError);
+          }
+        });
+        const fileName = requestType === 'cv' ? '職務経歴書.pdf' : '履歴書.pdf';
+        downloadPdfFile(base64, fileName);
+        return;
+      }
+
+      const response = await fetch('/api/pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ formData, documentType }),
+        body: JSON.stringify({ formData, documentType: requestType }),
+        signal: controller?.signal,
       });
       if (!response.ok) {
-        const errorBody = await response.json().catch(() => null);
+        const errorBody = await response.json().catch(async () => ({
+          error: await response.text().catch(() => ''),
+        }));
         throw new Error(errorBody?.error || response.statusText);
       }
-      const data = await response.json();
-      if (!data?.base64) {
-        throw new Error('PDFデータを取得できませんでした。');
-      }
-      const fileName = documentType === 'job' ? '職務経歴書.pdf' : '履歴書.pdf';
-      downloadBase64File(data.base64, fileName);
+      const buffer = await response.arrayBuffer();
+      const fileName = requestType === 'cv' ? '職務経歴書.pdf' : '履歴書.pdf';
+      downloadPdfFile(new Uint8Array(buffer), fileName);
     } catch (error) {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       const message = error instanceof Error ? error.message : '不明なエラーが発生しました。';
+      const isAbortError =
+        (error instanceof DOMException && error.name === 'AbortError') ||
+        (error instanceof Error && error.name === 'AbortError');
       console.error('handlePdfDownload error', error);
-      alert(`PDFの生成に失敗しました。\nエラー: ${message}`);
+      const displayMessage = isAbortError
+        ? 'PDF生成がタイムアウトしました。再度お試しください。'
+        : message;
+      alert(`PDFの生成に失敗しました。\nエラー: ${displayMessage}`);
     } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       setIsLoading(false);
     }
   };

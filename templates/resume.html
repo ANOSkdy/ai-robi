@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>履歴書</title>
+    <style>
+      @font-face {
+        font-family: 'NotoSansJP';
+        src: url('/fonts/NotoSansJP-Regular.ttf') format('truetype');
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      html,
+      body {
+        font-family: 'NotoSansJP', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #fff;
+        color: #111;
+        font-size: 11pt;
+        line-height: 1.6;
+      }
+
+      main {
+        padding: 24px 32px 32px;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      header {
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid #444;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20pt;
+      }
+
+      h2 {
+        font-size: 13pt;
+        margin: 20px 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #ccc;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+      }
+
+      th,
+      td {
+        border: 1px solid #bbb;
+        padding: 6px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        width: 32%;
+        background: #f4f6fb;
+      }
+
+      .photo-wrapper {
+        width: 140px;
+        height: 180px;
+        border: 1px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .photo-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .section {
+        page-break-inside: avoid;
+      }
+
+      .list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+      }
+
+      .list li {
+        margin-bottom: 6px;
+      }
+
+      .history-table td {
+        width: auto;
+      }
+
+      .note {
+        font-size: 9pt;
+        color: #555;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>履歴書</h1>
+          <p class="note">作成日: {{generatedAt}}</p>
+          <table>
+            <tbody>
+              {{#if personal.fullName}}
+                <tr>
+                  <th>氏名</th>
+                  <td>{{personal.fullName}}</td>
+                </tr>
+              {{/if}}
+              {{#if personal.furigana}}
+                <tr>
+                  <th>ふりがな</th>
+                  <td>{{personal.furigana}}</td>
+                </tr>
+              {{/if}}
+              {{#if personal.birthDate}}
+                <tr>
+                  <th>生年月日</th>
+                  <td>{{personal.birthDate}}</td>
+                </tr>
+              {{/if}}
+              {{#if personal.address}}
+                <tr>
+                  <th>住所</th>
+                  <td>{{personal.address}}</td>
+                </tr>
+              {{/if}}
+              {{#if personal.phone}}
+                <tr>
+                  <th>電話番号</th>
+                  <td>{{personal.phone}}</td>
+                </tr>
+              {{/if}}
+              {{#if personal.email}}
+                <tr>
+                  <th>メールアドレス</th>
+                  <td>{{personal.email}}</td>
+                </tr>
+              {{/if}}
+            </tbody>
+          </table>
+        </div>
+        {{#if photo.base64}}
+          <div class="photo-wrapper">
+            <img src="data:image/jpeg;base64,{{photo.base64}}" alt="証明写真" />
+          </div>
+        {{/if}}
+      </header>
+
+      {{#if historyEntries}}
+        <section class="section">
+          <h2>学歴・職歴</h2>
+          <table class="history-table">
+            <tbody>
+              {{#each historyEntries}}
+                {{#if formatted}}
+                  <tr>
+                    <td>{{formatted}}</td>
+                  </tr>
+                {{/if}}
+              {{/each}}
+            </tbody>
+          </table>
+        </section>
+      {{/if}}
+
+      {{#if qualificationEntries}}
+        <section class="section">
+          <h2>免許・資格</h2>
+          <table class="history-table">
+            <tbody>
+              {{#each qualificationEntries}}
+                {{#if formatted}}
+                  <tr>
+                    <td>{{formatted}}</td>
+                  </tr>
+                {{/if}}
+              {{/each}}
+            </tbody>
+          </table>
+        </section>
+      {{/if}}
+
+      {{#if resume.selfPr}}
+        <section class="section">
+          <h2>自己PR</h2>
+          <p>{{{breaklines resume.selfPr}}}</p>
+        </section>
+      {{/if}}
+
+      {{#if resume.answers}}
+        <section class="section">
+          <h2>ヒアリング回答</h2>
+          <ol class="list">
+            {{#each resume.answers}}
+              <li>
+                <strong>{{label}}</strong><br />
+                {{{breaklines value}}}
+              </li>
+            {{/each}}
+          </ol>
+        </section>
+      {{/if}}
+
+      {{#if photo.warning}}
+        <section class="section">
+          <h2>写真に関する注意</h2>
+          <p class="note">{{photo.warning}}</p>
+        </section>
+      {{/if}}
+    </main>
+  </body>
+</html>
