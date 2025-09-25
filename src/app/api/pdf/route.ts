@@ -4,7 +4,7 @@ import path from 'node:path';
 import chromium from '@sparticuz/chromium';
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer-core';
-import type { Page } from 'puppeteer-core';
+import type { Browser, Page } from 'puppeteer-core';
 import { z } from 'zod';
 
 import { renderTemplate } from '@/lib/render-template';
@@ -58,7 +58,7 @@ async function setupFontInterception(page: Page) {
 }
 
 export const POST = async (request: NextRequest) => {
-  let browser: puppeteer.Browser | null = null;
+  let browser: Browser | null = null;
   try {
     const raw = await request.text();
     if (raw.length > MAX_BODY_SIZE) {
