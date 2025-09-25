@@ -4,6 +4,7 @@ import path from 'node:path';
 import chromium from '@sparticuz/chromium';
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer-core';
+import type { Page } from 'puppeteer-core';
 import { z } from 'zod';
 
 import { renderTemplate } from '@/lib/render-template';
@@ -35,7 +36,7 @@ async function launchBrowser() {
   });
 }
 
-async function setupFontInterception(page: puppeteer.Page) {
+async function setupFontInterception(page: Page) {
   const fontPath = path.join(process.cwd(), 'public', 'fonts', 'NotoSansJP-Regular.ttf');
   try {
     const fontData = await fs.readFile(fontPath);
