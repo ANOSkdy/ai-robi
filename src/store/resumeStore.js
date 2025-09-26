@@ -38,9 +38,9 @@ const initialResumeData = {
   },
   histories: [
     { id: uuidv4(), type: 'header', year: '', month: '', description: '学 歴' },
-    { id: uuidv4(), type: 'entry',  year: '', month: '', description: '' },
+    { id: uuidv4(), type: 'entry',  year: '', month: '', description: '', status: '' },
     { id: uuidv4(), type: 'header', year: '', month: '', description: '職 歴' },
-    { id: uuidv4(), type: 'entry',  year: '', month: '', description: '' },
+    { id: uuidv4(), type: 'entry',  year: '', month: '', description: '', status: '' },
     { id: uuidv4(), type: 'footer', year: '', month: '', description: '以 上' },
   ],
   licenses: [{ id: uuidv4(), year: '', month: '', description: '' }],
@@ -52,10 +52,19 @@ const initialResumeData = {
   // ▼ 職務経歴書 用の状態
   jobSummary: '',           // 職務経歴要約
   jobDetails: [],           // 会社ごとの詳細（可変配列）
+  jobCompanyDetail: '',     // 所属した会社それぞれの職務内容
+  jobKnowledge: '',         // 活かせる経験知識
+  jobSelfPr: '',            // 自己PR
 
   // 証明写真（Base64 Data URL を想定）
   photoUrl: '',
 };
+
+function ensureLicenseSuffix(value) {
+  const input = value || '';
+  if (!input) return '';
+  return input.includes('（取得）') ? input : `${input}（取得）`;
+}
 
 export const useResumeStore = create(
   persist(
@@ -96,6 +105,7 @@ export const useResumeStore = create(
             year: '',
             month: '',
             description: '',
+            status: '',
           });
           return { histories: newHistories };
         }),
@@ -108,7 +118,15 @@ export const useResumeStore = create(
       updateLicense: (id, field, value) =>
         set((state) => ({
           licenses: state.licenses.map((l) =>
-            l.id === id ? { ...l, [field]: value } : l
+            l.id === id
+              ? {
+                  ...l,
+                  [field]:
+                    field === 'description'
+                      ? ensureLicenseSuffix(value)
+                      : value,
+                }
+              : l
           ),
         })),
       addLicense: (index) =>
@@ -161,6 +179,9 @@ export const useResumeStore = create(
           next[index] = { company, detail: value };
           return { jobDetails: next };
         }),
+      setJobCompanyDetail: (value) => set({ jobCompanyDetail: value }),
+      setJobKnowledge: (value) => set({ jobKnowledge: value }),
+      setJobSelfPr: (value) => set({ jobSelfPr: value }),
 
       // --- photo
       updatePhotoUrl: (dataUrl) => set({ photoUrl: dataUrl }),
@@ -168,6 +189,22 @@ export const useResumeStore = create(
     }),
     {
       name: 'resume-data-storage',
+      onRehydrateStorage: () => (state) => {
+        if (!state) return;
+        if (Array.isArray(state.licenses)) {
+          state.licenses = state.licenses.map((license) => ({
+            ...license,
+            description: ensureLicenseSuffix(license.description),
+          }));
+        }
+        if (Array.isArray(state.histories)) {
+          state.histories = state.histories.map((history) =>
+            history?.type === 'entry'
+              ? { ...history, status: history.status || '' }
+              : history
+          );
+        }
+      },
     }
   )
 );
