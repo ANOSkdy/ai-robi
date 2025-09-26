@@ -1,91 +1,79 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useId } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import ResumePreview from '@/components/ResumePreview';
 import JobPreview from '@/components/JobPreview';
-import { useResumeStore } from '@/store/resumeStore';
+import ResumeAIForm from '@/components/ResumeAIForm';
+import CareerAIForm from '@/components/CareerAIForm';
+import PhotoUploader from '@/components/PhotoUploader';
 
 export default function Home() {
-  // ← v3の新API: contentRef を渡す
   const contentRef = useRef(null);
-
-  const fileInputId = useId();
-  const { updatePhotoUrl } = useResumeStore();
-  const [mode, setMode] = useState('resume'); // 'resume' | 'job'
-
+  const [activeTab, setActiveTab] = useState('resume');
   const [isReady, setIsReady] = useState(false);
+
   useEffect(() => {
-    if (contentRef.current) setIsReady(true);
-  }, []);
+    if (!isReady && contentRef.current) {
+      setIsReady(true);
+    }
+  }, [activeTab, isReady]);
+
+  const handleSelectTab = (tab) => {
+    if (tab === activeTab) return;
+    setActiveTab(tab);
+    setIsReady(false);
+  };
 
   const handlePrint = useReactToPrint({
     contentRef,
-    documentTitle: '履歴書',
+    documentTitle: activeTab === 'resume' ? '履歴書' : '職務経歴書',
     removeAfterPrint: true,
   });
 
-  // 画像選択 → Base64化 → store へ保存
-  const onPickPhoto = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      alert('画像ファイルを選択してください。');
-      e.target.value = '';
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      updatePhotoUrl(reader.result); // Base64 Data URL
-      e.target.value = ''; // 同じファイル再選択でも change を発火させる
-    };
-    reader.readAsDataURL(file);
-  };
-
   return (
     <main>
-      <header className="page-header" style={{ padding: '20px', textAlign: 'center' }}>
-        <h1 style={{ margin: 0 }}>
-          {mode === 'resume' ? 'AI履歴書' : 'AI職務経歴書'}
-        </h1>
-
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 12 }}>
-          <button
-            type="button"
-            className="download-btn"
-            onClick={() => document.getElementById(fileInputId).click()}
-          >
-            写真を選択
-          </button>
-          <input
-            id={fileInputId}
-            type="file"
-            accept="image/*"
-            onChange={onPickPhoto}
-            style={{ display: 'none' }}
-          />
-
-          <button
-            onClick={handlePrint}
-            className="download-btn"
-            disabled={!isReady}
-          >
-            {isReady ? 'PDFダウンロード' : '準備中...'}
-          </button>
-
-          <button
-            type="button"
-            className="download-btn"
-            onClick={() => setMode((m) => (m === 'resume' ? 'job' : 'resume'))}
-          >
-            {mode === 'resume' ? '職務経歴書へ' : '履歴書へ'}
-          </button>
+      <header className="page-header">
+        <div className="page-header__top">
+          <div className="brand-title" aria-label="サービス名">
+            AI-ROBI
+          </div>
+          <div className="header-actions">
+            {activeTab === 'resume' && <PhotoUploader />}
+            <button
+              type="button"
+              className="download-btn"
+              onClick={handlePrint}
+              disabled={!isReady}
+            >
+              {isReady ? 'PDFダウンロード' : '準備中...'}
+            </button>
+          </div>
         </div>
+        <nav className="tab-switch" aria-label="書類の切り替え">
+          <button
+            type="button"
+            className={`tab-button ${activeTab === 'resume' ? 'is-active' : ''}`}
+            onClick={() => handleSelectTab('resume')}
+          >
+            履歴書
+          </button>
+          <button
+            type="button"
+            className={`tab-button ${activeTab === 'career' ? 'is-active' : ''}`}
+            onClick={() => handleSelectTab('career')}
+          >
+            職務経歴書
+          </button>
+        </nav>
       </header>
 
-      {/* 印刷対象 */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        {mode === 'resume' ? (
+      <section className="tab-tools">
+        {activeTab === 'resume' ? <ResumeAIForm /> : <CareerAIForm />}
+      </section>
+
+      <div className="preview-wrapper">
+        {activeTab === 'resume' ? (
           <ResumePreview ref={contentRef} />
         ) : (
           <JobPreview ref={contentRef} />
