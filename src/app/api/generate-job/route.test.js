@@ -7,7 +7,13 @@ describe('generate-job API', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        keywords: 'test',
+        answers: {
+          q1: '大学卒業後に営業職として活躍',
+          q2: 'A社 2018-2020 営業マネージャー',
+          q3: '社長賞を受賞',
+          q4: 'SaaS営業・チームビルディング',
+          q5: 'クライアントから高評価',
+        },
         context: { histories: [] },
         companies: ['A', 'B'],
       }),
@@ -22,6 +28,7 @@ describe('generate-job API', () => {
         { company: 'A', detail: '' },
         { company: 'B', detail: '' },
       ],
+      cvBody: '',
       error: 'Gemini APIキーが未設定です',
     });
   });

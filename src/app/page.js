@@ -34,20 +34,70 @@ export default function Home() {
       e.target.value = '';
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      updatePhotoUrl(reader.result); // Base64 Data URL
-      e.target.value = ''; // 同じファイル再選択でも change を発火させる
-    };
-    reader.readAsDataURL(file);
+
+    const readAsDataUrl = (blob) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('画像の読み込みに失敗しました。'));
+        reader.readAsDataURL(blob);
+      });
+
+    const cropToJisRatio = (dataUrl) =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const targetRatio = 3 / 4; // 横:縦 = 3:4（縦4:横3）
+          const outputWidth = 300;
+          const outputHeight = 400;
+          const canvas = document.createElement('canvas');
+          canvas.width = outputWidth;
+          canvas.height = outputHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('画像処理用のコンテキストを取得できませんでした。'));
+            return;
+          }
+
+          const sourceRatio = img.width / img.height;
+          let sx = 0;
+          let sy = 0;
+          let sw = img.width;
+          let sh = img.height;
+
+          if (sourceRatio > targetRatio) {
+            // 横長なので左右をトリミング
+            sw = img.height * targetRatio;
+            sx = (img.width - sw) / 2;
+          } else if (sourceRatio < targetRatio) {
+            // 縦長なので上下をトリミング
+            sh = img.width / targetRatio;
+            sy = (img.height - sh) / 2;
+          }
+
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
+          resolve(canvas.toDataURL('image/jpeg', 0.92));
+        };
+        img.onerror = () => reject(new Error('画像の読み込みに失敗しました。'));
+        img.src = dataUrl;
+      });
+
+    try {
+      const base64 = await readAsDataUrl(file);
+      const cropped = await cropToJisRatio(base64);
+      updatePhotoUrl(cropped);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || '画像の処理に失敗しました。');
+    } finally {
+      e.target.value = '';
+    }
   };
 
   return (
     <main>
       <header className="page-header" style={{ padding: '20px', textAlign: 'center' }}>
-        <h1 style={{ margin: 0 }}>
-          {mode === 'resume' ? 'AI履歴書' : 'AI職務経歴書'}
-        </h1>
+        <h1 style={{ margin: 0 }}>AI-ROBI｜AI履歴書・職務経歴書ジェネレーター</h1>
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 12 }}>
           <button

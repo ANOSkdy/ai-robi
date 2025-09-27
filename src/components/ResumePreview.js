@@ -40,14 +40,16 @@ const ResumePreview = React.forwardRef((props, ref) => {
   } = useResumeStore();
 
   // --- AI機能用（自己PR）
-  const [aiKeywords, setAiKeywords] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiError, setAiError] = useState('');
-
-  // --- AI機能用（志望動機）
-  const [motKeywords, setMotKeywords] = useState('');
-  const [isMotGenerating, setIsMotGenerating] = useState(false);
-  const [motError, setMotError] = useState('');
+  const [isPrModalOpen, setIsPrModalOpen] = useState(false);
+  const [prAnswers, setPrAnswers] = useState({
+    q1: '',
+    q2: '',
+    q3: '',
+    q4: '',
+    q5: '',
+  });
 
   const getAge = (birthdate) => {
     if (!birthdate?.year || !birthdate?.month || !birthdate?.day) return '';
@@ -68,57 +70,46 @@ const ResumePreview = React.forwardRef((props, ref) => {
     }
   };
 
+  const openPrModal = () => {
+    setAiError('');
+    setIsPrModalOpen(true);
+  };
+
+  const closePrModal = () => {
+    if (!isGenerating) setIsPrModalOpen(false);
+  };
+
+  const handlePrAnswerChange = (key, value) => {
+    setPrAnswers((prev) => ({ ...prev, [key]: value }));
+  };
+
   // --- AI生成（自己PR）
   const handleGenerateSelfPR = async () => {
     setIsGenerating(true);
     setAiError('');
     try {
+      const payload = {
+        target: 'self_pr',
+        answers: Object.fromEntries(
+          Object.entries(prAnswers).map(([k, v]) => [k, v.trim()])
+        ),
+        context: { histories, licenses },
+      };
       const res = await fetch('/api/generate-text', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          target: 'self_pr',
-          keywords: aiKeywords,
-          context: { histories, licenses },
-        }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'AIの生成に失敗しました。');
-      }
       const data = await res.json();
-      updateSelfPromotion(data.generatedText || '');
+      if (!res.ok || data.ok === false) {
+        throw new Error(data.error || 'AIの生成に失敗しました。');
+      }
+      updateSelfPromotion(data.generatedText || data.text || '');
+      setIsPrModalOpen(false);
     } catch (e) {
       setAiError(e.message || 'エラーが発生しました');
     } finally {
       setIsGenerating(false);
-    }
-  };
-
-  // --- AI生成（志望動機）
-  const handleGenerateMotivation = async () => {
-    setIsMotGenerating(true);
-    setMotError('');
-    try {
-      const res = await fetch('/api/generate-text', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          target: 'motivation',
-          keywords: motKeywords,
-          context: { histories, licenses },
-        }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'AIの生成に失敗しました。');
-      }
-      const data = await res.json();
-      updateMotivation(data.generatedText || '');
-    } catch (e) {
-      setMotError(e.message || 'エラーが発生しました');
-    } finally {
-      setIsMotGenerating(false);
     }
   };
 
@@ -300,10 +291,12 @@ const ResumePreview = React.forwardRef((props, ref) => {
       </div>
 
       {/* 学歴・職歴 */}
-      <div className="history-grid">
+      <div className="history-grid history-section">
         <div className="cell h-year-h">年</div>
         <div className="cell h-month-h">月</div>
         <div className="cell h-desc-h">学 歴 ・ 職 歴</div>
+        <div className="cell h-type-h">種別</div>
+        <div className="cell h-actions-h">操作</div>
 
         {histories.map((entry, index) => {
           if (isLabelRow(entry) || isEndMarker(entry)) return null;
@@ -332,39 +325,64 @@ const ResumePreview = React.forwardRef((props, ref) => {
               </div>
               <div className="cell h-desc">
                 {editable ? (
-                  <>
-                    <div
-                      className="h-desc-input"
-                      contentEditable
-                      suppressContentEditableWarning
-                      onBlur={(e) =>
-                        updateHistory(
-                          entry.id,
-                          'description',
-                          e.currentTarget.innerText
-                        )
-                      }
-                      data-placeholder="〇〇大学〇〇学部 入学"
-                    >
-                      {entry.description}
-                    </div>
-                    <div className="row-controls">
-                      <button
-                        className="control-btn add-btn"
-                        onClick={() => addHistory(index + 1)}
-                      >
-                        +
-                      </button>
-                      <button
-                        className="control-btn delete-btn"
-                        onClick={() => deleteHistory(entry.id)}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </>
+                  <div
+                    className="h-desc-input"
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) =>
+                      updateHistory(
+                        entry.id,
+                        'description',
+                        e.currentTarget.innerText
+                      )
+                    }
+                    data-placeholder="〇〇大学〇〇学部 入学"
+                  >
+                    {entry.description}
+                  </div>
                 ) : (
                   <div style={{ width: '100%' }}>{entry.description}</div>
+                )}
+              </div>
+              <div className="cell h-type">
+                {editable ? (
+                  <select
+                    className="history-type-select"
+                    value={entry.category || ''}
+                    aria-label="学歴・職歴の種別"
+                    onChange={(e) =>
+                      updateHistory(entry.id, 'category', e.target.value)
+                    }
+                  >
+                    <option value="">種別</option>
+                    <option value="入学">入学</option>
+                    <option value="卒業">卒業</option>
+                    <option value="中途退学">中途退学</option>
+                    <option value="入社">入社</option>
+                    <option value="退社">退社</option>
+                    <option value="開業">開業</option>
+                    <option value="閉業">閉業</option>
+                  </select>
+                ) : (
+                  <div style={{ width: '100%' }}>{entry.category}</div>
+                )}
+              </div>
+              <div className="cell h-actions">
+                {editable && (
+                  <div className="row-controls" style={{ display: 'flex' }}>
+                    <button
+                      className="control-btn add-btn"
+                      onClick={() => addHistory(index + 1)}
+                    >
+                      +
+                    </button>
+                    <button
+                      className="control-btn delete-btn"
+                      onClick={() => deleteHistory(entry.id)}
+                    >
+                      ×
+                    </button>
+                  </div>
                 )}
               </div>
             </React.Fragment>
@@ -446,25 +464,6 @@ const ResumePreview = React.forwardRef((props, ref) => {
         >
           {motivation}
         </div>
-        {/* 志望動機：AI生成UI */}
-        <div className="ai-controls">
-          <input
-            type="text"
-            value={motKeywords}
-            onChange={(e) => setMotKeywords(e.target.value)}
-            placeholder="志望動機に入れたいキーワード (例: 事業貢献, 新規開発, 顧客志向)"
-            className="ai-keyword-input"
-            disabled={isMotGenerating}
-          />
-          <button
-            onClick={handleGenerateMotivation}
-            className="ai-generate-btn"
-            disabled={isMotGenerating || !motKeywords}
-          >
-            {isMotGenerating ? '生成中...' : 'AIで志望動機を生成'}
-          </button>
-          {motError && <p className="ai-error-message">{motError}</p>}
-        </div>
       </div>
 
       {/* 自己PR・本人希望 */}
@@ -479,27 +478,97 @@ const ResumePreview = React.forwardRef((props, ref) => {
         >
           {selfPromotion}
         </div>
+        <div
+          className="cell f-content"
+          contentEditable
+          suppressContentEditableWarning
+          onBlur={(e) => updateRequests(e.currentTarget.innerText)}
+          data-placeholder="本人希望記入欄などはこちらに記入してください"
+        >
+          {requests}
+        </div>
 
         {/* 自己PR：AI生成UI */}
         <div className="ai-controls">
-          <input
-            type="text"
-            value={aiKeywords}
-            onChange={(e) => setAiKeywords(e.target.value)}
-            placeholder="アピールしたいキーワード (例: 挑戦心, リーダーシップ)"
-            className="ai-keyword-input"
-            disabled={isGenerating}
-          />
           <button
-            onClick={handleGenerateSelfPR}
+            onClick={openPrModal}
             className="ai-generate-btn"
-            disabled={isGenerating || !aiKeywords}
+            disabled={isGenerating}
           >
-            {isGenerating ? '生成中...' : 'AIで文章を生成'}
+            {isGenerating ? '生成中...' : 'AIで自己PRを生成'}
           </button>
           {aiError && <p className="ai-error-message">{aiError}</p>}
         </div>
       </div>
+
+      {isPrModalOpen && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal-content">
+            <h3>自己PR ヒアリング</h3>
+            <label>
+              Q1 強みのスキル/経験
+              <input
+                type="text"
+                value={prAnswers.q1}
+                onChange={(e) => handlePrAnswerChange('q1', e.target.value)}
+              />
+            </label>
+            <label>
+              Q2 直近の成果（数値/規模）
+              <textarea
+                rows={2}
+                value={prAnswers.q2}
+                onChange={(e) => handlePrAnswerChange('q2', e.target.value)}
+              />
+            </label>
+            <label>
+              Q3 他者評価（顧客/上長/同僚）
+              <textarea
+                rows={2}
+                value={prAnswers.q3}
+                onChange={(e) => handlePrAnswerChange('q3', e.target.value)}
+              />
+            </label>
+            <label>
+              Q4 課題解決のプロセス
+              <textarea
+                rows={2}
+                value={prAnswers.q4}
+                onChange={(e) => handlePrAnswerChange('q4', e.target.value)}
+              />
+            </label>
+            <label>
+              Q5 今後発揮したい価値
+              <textarea
+                rows={2}
+                value={prAnswers.q5}
+                onChange={(e) => handlePrAnswerChange('q5', e.target.value)}
+              />
+            </label>
+            {aiError && (
+              <p className="ai-error-message" style={{ marginTop: 0 }}>{aiError}</p>
+            )}
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="control-btn"
+                onClick={closePrModal}
+                disabled={isGenerating}
+              >
+                キャンセル
+              </button>
+              <button
+                type="button"
+                className="ai-generate-btn"
+                onClick={handleGenerateSelfPR}
+                disabled={isGenerating}
+              >
+                {isGenerating ? '生成中…' : 'AIで自己PR生成'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

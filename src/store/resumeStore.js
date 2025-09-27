@@ -38,9 +38,23 @@ const initialResumeData = {
   },
   histories: [
     { id: uuidv4(), type: 'header', year: '', month: '', description: '学 歴' },
-    { id: uuidv4(), type: 'entry',  year: '', month: '', description: '' },
+    {
+      id: uuidv4(),
+      type: 'entry',
+      year: '',
+      month: '',
+      description: '',
+      category: '',
+    },
     { id: uuidv4(), type: 'header', year: '', month: '', description: '職 歴' },
-    { id: uuidv4(), type: 'entry',  year: '', month: '', description: '' },
+    {
+      id: uuidv4(),
+      type: 'entry',
+      year: '',
+      month: '',
+      description: '',
+      category: '',
+    },
     { id: uuidv4(), type: 'footer', year: '', month: '', description: '以 上' },
   ],
   licenses: [{ id: uuidv4(), year: '', month: '', description: '' }],
@@ -52,6 +66,7 @@ const initialResumeData = {
   // ▼ 職務経歴書 用の状態
   jobSummary: '',           // 職務経歴要約
   jobDetails: [],           // 会社ごとの詳細（可変配列）
+  cvBody: '',               // 職務経歴書本文（AI生成）
 
   // 証明写真（Base64 Data URL を想定）
   photoUrl: '',
@@ -96,6 +111,7 @@ export const useResumeStore = create(
             year: '',
             month: '',
             description: '',
+            category: '',
           });
           return { histories: newHistories };
         }),
@@ -106,11 +122,19 @@ export const useResumeStore = create(
 
       // --- licenses
       updateLicense: (id, field, value) =>
-        set((state) => ({
-          licenses: state.licenses.map((l) =>
-            l.id === id ? { ...l, [field]: value } : l
-          ),
-        })),
+        set((state) => {
+          const normalizeDesc = (desc) => {
+            const trimmed = (desc || '').trim();
+            if (!trimmed) return '';
+            return trimmed.endsWith('取得') ? trimmed : `${trimmed} 取得`;
+          };
+          const nextValue = field === 'description' ? normalizeDesc(value) : value;
+          return {
+            licenses: state.licenses.map((l) =>
+              l.id === id ? { ...l, [field]: nextValue } : l
+            ),
+          };
+        }),
       addLicense: (index) =>
         set((state) => {
           const newLicenses = [...state.licenses];
@@ -161,6 +185,8 @@ export const useResumeStore = create(
           next[index] = { company, detail: value };
           return { jobDetails: next };
         }),
+
+      setCvBody: (value) => set({ cvBody: value }),
 
       // --- photo
       updatePhotoUrl: (dataUrl) => set({ photoUrl: dataUrl }),

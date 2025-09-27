@@ -194,6 +194,9 @@ body {
    学歴・職歴／免許・資格
    ====================== */
 .history-grid { grid-template-columns: 80px 60px 1fr; }
+.history-grid.history-section {
+  grid-template-columns: 80px 60px 1fr 140px 80px;
+}
 .history-grid .cell { min-height: 38px; padding-left: 1em; }
 
 /* Header cells */
@@ -221,6 +224,71 @@ body {
   align-items: center;
   justify-content: center;
   padding-left: 0;
+}
+.history-grid .h-type,
+.history-grid .h-type-h,
+.history-grid .h-actions,
+.history-grid .h-actions-h {
+  align-items: center;
+  justify-content: center;
+}
+.history-grid .h-actions { padding-left: 0; }
+
+.history-type-select {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 16px;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-content label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: #333;
+}
+
+.modal-content input,
+.modal-content textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
 }
 
 /* ======================
@@ -261,6 +329,14 @@ body {
 }
 .history-grid .cell:hover .row-controls,
 .dynamic-row:hover .row-controls { display: flex; }
+
+.history-grid .h-actions .row-controls {
+  position: static;
+  transform: none;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
 
 .control-btn {
   width: 22px;
