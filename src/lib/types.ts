@@ -1,4 +1,4 @@
-﻿export type ResumeProfile = {
+export type ResumeProfile = {
   name: string; kana?: string; birth: string; // YYYY-MM-DD
   address: string; email?: string; phone?: string;
   photoBase64?: string; // 4:3, <=2MB

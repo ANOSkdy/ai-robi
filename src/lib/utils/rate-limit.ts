@@ -1,4 +1,4 @@
-﻿const TOKENS = new Map<string, number[]>();
+const TOKENS = new Map<string, number[]>();
 const WINDOW_MS = 60_000;
 const LIMIT = 3;
 

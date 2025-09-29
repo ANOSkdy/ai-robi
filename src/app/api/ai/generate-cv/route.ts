@@ -1,4 +1,4 @@
-﻿export const runtime = 'nodejs';
+export const runtime = 'nodejs';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { rateLimit } from '@/lib/utils/rate-limit';
 import { withBackoff } from '@/lib/utils/backoff';

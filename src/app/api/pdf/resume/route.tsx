@@ -1,4 +1,4 @@
-﻿export const runtime = 'nodejs';
+export const runtime = 'nodejs';
 import { Document, Page, Text, pdf, StyleSheet } from '@react-pdf/renderer';
 import { registerFontsJP } from '@/lib/pdf/fonts';
 
@@ -12,13 +12,13 @@ export async function POST() {
   const Doc = () => (
     <Document>
       <Page size='A4' style={styles.page}>
-        <Text>AI-ROBI 職務経歴書プレビュー（雛形）</Text>
+        <Text>AI-ROBI 履歴書プレビュー（雛形）</Text>
       </Page>
     </Document>
   );
   const blob = await pdf(<Doc />).toBuffer();
   return new Response(blob, {
     status: 200,
-    headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="cv.pdf"' }
+    headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="resume.pdf"' }
   });
 }

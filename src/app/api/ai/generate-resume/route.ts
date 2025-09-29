@@ -1,4 +1,4 @@
-﻿export const runtime = 'nodejs';
+export const runtime = 'nodejs';
 import { zResumePRReq } from '@/lib/validate/zod';
 
 export async function POST(req: Request) {

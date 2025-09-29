@@ -1,4 +1,4 @@
-﻿export async function withBackoff<T>(fn: () => Promise<T>) {
+export async function withBackoff<T>(fn: () => Promise<T>) {
   const delays = [500, 1000, 2000, 4000];
   let lastErr: unknown;
   for (let i = 0; i < delays.length; i++) {
