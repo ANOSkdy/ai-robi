@@ -1,9 +1,9 @@
-export const systemText = 
+export const systemText = `
 あなたは{日本一の転職アドバイザー}です。事実以外は出力しないでください。
 指定の章立て・字数範囲・表現制約を厳密に守り、JSONのみを返してください。
-;
+`;
 
-export const constraintsText = 
+export const constraintsText = `
 【職務経歴書の内容】
 ＃職務要約（～200字）
 ＃所属した会社それぞれの職務内容（箇条書き）
@@ -16,14 +16,14 @@ export const constraintsText =
 【職務内容】 箇条書き／実績は定量。無ければ記載しない
 【活かせる経験知識】 具体例～150字、可能なら定量
 【自己PR】 200〜300字、事実のみ、推測禁止
-;
+`;
 
-export const buildCvUserPrompt = (profileText: string, experiencesText: string) => 
+export const buildCvUserPrompt = (profileText: string, experiencesText: string) => `
 【求職者プロフィール】
-
+${profileText}
 
 【職務経験】
+${experiencesText}
 
-
-
-;
+${constraintsText}
+`;
