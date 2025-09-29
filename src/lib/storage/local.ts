@@ -1,4 +1,5 @@
-﻿"use client";
+"use client";
+import React, { useEffect } from "react";
 
 const PREFIX = "ai-robi:v1:";
 
@@ -15,8 +16,7 @@ export function save<T>(key: string, value: T) {
   try { localStorage.setItem(PREFIX + key, JSON.stringify(value)); } catch {}
 }
 
-export function useAutosave<T>(key: string, state: T, deps: any[] = []) {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const React = require("react");
-  React.useEffect(() => { save(key, state); }, deps);
+/** stateの変更時に自動保存する */
+export function useAutosave<T>(key: string, state: T) {
+  useEffect(() => { save(key, state); }, [key, state]);
 }
