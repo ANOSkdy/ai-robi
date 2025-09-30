@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { z } from "zod";
 import { FormSection } from "@/components/ui/FormSection";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { useResumeStore, type Profile } from "@/store/resume";
+import { DraftRestoreBanner } from "@/components/DraftRestoreBanner";
+import { clearDraft, loadDraft, useAutosave } from "@/hooks/useAutosave";
 
 const profileSchema = z.object({
   name: z.string().trim().min(1, "氏名は必須です。"),
@@ -43,6 +45,8 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
+const STORAGE_KEY = "airobi:resume:profile:v1";
+
 const toFormData = (profile: Profile): ProfileFormData => ({
   name: profile.name ?? "",
   nameKana: profile.nameKana ?? "",
@@ -63,6 +67,13 @@ export default function ResumeProfilePage() {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProfileFormData, string>>>({});
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [draft, setDraft] = useState<{ data?: ProfileFormData; ts?: number }>();
+
+  useEffect(() => {
+    setDraft(loadDraft<ProfileFormData>(STORAGE_KEY));
+  }, []);
+
+  useAutosave({ key: STORAGE_KEY, data: formData });
 
   const avatarPreview = useMemo(() => {
     if (!formData.avatarUrl || formData.avatarUrl.trim() === "") return undefined;
@@ -111,12 +122,27 @@ export default function ResumeProfilePage() {
     };
 
     setProfile(normalized);
+    clearDraft(STORAGE_KEY);
+    setDraft(undefined);
     setSaved(true);
     window.setTimeout(() => setSaved(false), 2500);
   };
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+      <DraftRestoreBanner
+        draft={draft}
+        onRestore={(data) => {
+          setFormData(data);
+          setDraft(undefined);
+          setFieldErrors({});
+          setErrorMessage("");
+        }}
+        onDiscard={() => {
+          clearDraft(STORAGE_KEY);
+          setDraft(undefined);
+        }}
+      />
       <FormSection title="履歴書：プロフィール" description="基本情報を入力してください。">
         {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_minmax(0,1fr)]">
