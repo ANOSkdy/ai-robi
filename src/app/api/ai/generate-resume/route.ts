@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { withBackoff } from "@/lib/utils/backoff";
-import { zResumePRAnswers } from "@/lib/validate/zod";
+import { zResumePR } from "@/lib/validate/zod";
 
 const SYSTEM = `
 あなたは日本語で出力するキャリアアドバイザーです。事実以外は書きません。
@@ -26,7 +26,7 @@ const USER_TEMPLATE = (answers: string[]) => `
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const parsed = zResumePRAnswers.safeParse(body);
+  const parsed = zResumePR.safeParse(body);
   if (!parsed.success) {
     return Response.json({ error: parsed.error.flatten() }, { status: 400 });
   }
