@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React from "react";
 import { load, useAutosave } from "@/lib/storage/local";
 
@@ -8,9 +8,9 @@ export default function Page() {
   const [profile, setProfile] = React.useState(() => load("cv:profile", { summary:"", strengths:"", desiredRole:"" }));
   const [exps, setExps] = React.useState<Exp[]>(() => load("cv:exps", [{ company:"", from:"" }]));
   const [result, setResult] = React.useState<any>(() => load("cv:result", null));
-  useAutosave("cv:profile", profile, [profile]);
-  useAutosave("cv:exps", exps, [exps]);
-  useAutosave("cv:result", result, [result]);
+  useAutosave("cv:profile", profile);
+  useAutosave("cv:exps", exps);
+  useAutosave("cv:result", result);
 
   const add = () => setExps(prev=>[...prev,{company:"",from:""}]);
   const update = (i:number,p:Partial<Exp>)=> setExps(prev=>prev.map((r,idx)=>idx===i?{...r,...p}:r));

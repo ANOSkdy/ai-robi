@@ -17,7 +17,7 @@ export const zResumeHistory = z.object({
   yyyymm: zYyyyMm,
   org: z.string().min(1),
   detail: z.string().optional(),
-  kind: z.enum(["入学","卒業","中途退学","入社","退社","開業","閉業"])
+  kind: z.enum(["蜈･蟄ｦ","蜊呈･ｭ","荳ｭ騾秘蟄ｦ","蜈･遉ｾ","騾遉ｾ","髢区･ｭ","髢画･ｭ"])
 });
 
 export const zJobExperience = z.object({
@@ -32,4 +32,8 @@ export const zResumePRReq = z.object({
   answers: z.array(z.string()).length(5),
   profile: zResumeProfile,
   history: z.array(zResumeHistory)
+});
+
+export const zResumePRAnswers = z.object({
+  answers: z.array(z.string()).length(5)
 });
