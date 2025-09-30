@@ -59,9 +59,11 @@ describe('resume store basic operations', () => {
   it('records PR answers and generated text', () => {
     useResumeStore.getState().setPrAnswer(0, '強みは課題解決力です');
     useResumeStore.getState().setPrText('自己PRの生成結果');
+    useResumeStore.getState().setCvText('職務経歴書本文');
     const state = useResumeStore.getState();
     expect(state.prAnswers[0]).toBe('強みは課題解決力です');
     expect(state.prText).toBe('自己PRの生成結果');
+    expect(state.cvText).toBe('職務経歴書本文');
   });
 
   it('handles CV state updates with achievements arrays', () => {
