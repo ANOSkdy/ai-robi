@@ -1,4 +1,5 @@
 import "./globals.css";
+import "@/styles/print.css";
 import Link from "next/link";
 import React from "react";
 import { MainNavigation } from "@/components/ui/MainNavigation";
@@ -9,7 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja">
       <body className="min-h-screen bg-slate-50 text-slate-900">
-        <header className="border-b bg-white/95 shadow-sm backdrop-blur">
+        <header className="border-b bg-white/95 shadow-sm backdrop-blur" data-hide-on-print>
           <div className="mx-auto flex max-w-4xl flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between">
             <Link
               href="/"

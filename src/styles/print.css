@@ -1,0 +1,75 @@
+/* A4ベース */
+@page {
+  size: A4;
+  margin: 14mm 12mm;
+}
+
+/* 印刷時スタイル */
+@media print {
+  /* 画面専用UIを隠す（ボタン、ナビ等は data-hide-on-print を付与しておく） */
+  [data-hide-on-print],
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* 本文は視認性を優先（黒基調） */
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* 行間・段落の整え（読みやすさ重視、必要に応じて微調整可） */
+  .print-body {
+    line-height: 1.6;
+    word-break: break-word;
+    font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto,
+      "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 12pt;
+  }
+
+  /* 改ページ制御：セクション途中で切れにくくする */
+  .avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+    page-break-after: avoid;
+    margin-block-start: 0.2em;
+    margin-block-end: 0.4em;
+  }
+
+  /* 表、カード、経歴ブロックも分断回避 */
+  table,
+  thead,
+  tbody,
+  tr,
+  td,
+  th,
+  .card,
+  .entry,
+  .section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* 画像：枠装飾を抑え、4:3 など比率維持 */
+  img,
+  .photo-4x3 {
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* リンク装飾の抑制（下線等） */
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+}
