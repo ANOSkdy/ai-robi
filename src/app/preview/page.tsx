@@ -31,7 +31,7 @@ export default function PreviewPage() {
   const printContentRef = useRef<HTMLDivElement>(null);
 
   const triggerPrint = useReactToPrint({
-    content: () => printContentRef.current,
+    contentRef: printContentRef,
     documentTitle: profile.name ? `${profile.name}-resume` : "resume-preview",
   });
 
