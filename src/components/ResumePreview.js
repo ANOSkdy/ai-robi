@@ -1,6 +1,7 @@
 // src/components/ResumePreview.js
 'use client';
 
+import Image from 'next/image';
 import React, { useState } from 'react';
 import { useResumeStore } from '@/store/resumeStore';
 
@@ -183,7 +184,7 @@ const ResumePreview = React.forwardRef((props, ref) => {
         <div className={`cell p-photo ${photoUrl ? 'has-image' : ''}`}>
           {photoUrl ? (
             <>
-              <img src={photoUrl} alt="証明写真" />
+              <Image src={photoUrl} alt="証明写真" fill className="object-cover" unoptimized />
               <button
                 type="button"
                 className="photo-delete-btn"
