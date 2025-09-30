@@ -1,10 +1,23 @@
-export async function withBackoff<T>(fn: () => Promise<T>) {
-  const delays = [500, 1000, 2000, 4000];
-  let lastErr: unknown;
-  for (let i = 0; i < delays.length; i++) {
-    try { return await fn(); } catch (e) {
-      lastErr = e; if (i < delays.length - 1) await new Promise(r => setTimeout(r, delays[i]));
+export async function withBackoff<T>(fn: () => Promise<T>): Promise<T> {
+  const maxAttempts = 5;
+  const baseDelayMs = 500;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxAttempts - 1) {
+        break;
+      }
+      const delay = baseDelayMs * 2 ** attempt;
+      const jitter = Math.random() * baseDelayMs;
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, delay + jitter);
+      });
     }
   }
-  throw lastErr;
+
+  throw lastError;
 }

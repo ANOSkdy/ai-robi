@@ -31,9 +31,21 @@ export async function POST(req: Request) {
     return Response.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const key = process.env.GEMINI_API_KEY;
+  const key: string = process.env.GEMINI_API_KEY ?? "";
+  const isMock = process.env.MOCK_AI === "1";
   if (!key) {
-    return Response.json({ error: "AIキー未設定のため生成不可" }, { status: 502 });
+    if (isMock) {
+      return Response.json({
+        prText: "Mock resume preview: Experienced product strategist with eight years leading cross-functional web platform teams, aligning engineering, design, and sales to ship secure releases, improve onboarding by 35 percent, and mentor successors for sustainable growth."
+      });
+    }
+    return Response.json({ error: "AI key is not configured" }, { status: 502 });
+  }
+
+  if (isMock) {
+    return Response.json({
+      prText: "Mock resume preview: Experienced product strategist with eight years leading cross-functional web platform teams, aligning engineering, design, and sales to ship secure releases, improve onboarding by 35 percent, and mentor successors for sustainable growth."
+    });
   }
 
   const genAI = new GoogleGenerativeAI(key);
@@ -44,15 +56,19 @@ export async function POST(req: Request) {
 
   const prompt = USER_TEMPLATE(parsed.data.answers);
 
-  const text = await withBackoff(async () => {
-    const res = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 512, temperature: 0.3 },
+  try {
+    const text = await withBackoff(async () => {
+      const res = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 512, temperature: 0.3 },
+      });
+      return res.response.text();
     });
-    return res.response.text();
-  });
 
-  // 念のためコードブロックを剥がす
-  const cleaned = text.replace(/^```[\s\S]*?\n/,"").replace(/```$/,"").trim();
-  return Response.json({ prText: cleaned });
+    const cleaned = text.replace(/```json\s*|```/g, "").trim();
+    return Response.json({ prText: cleaned });
+  } catch (error) {
+    console.error("generate-resume failed", error);
+    return Response.json({ error: "AI generation failed" }, { status: 502 });
+  }
 }
