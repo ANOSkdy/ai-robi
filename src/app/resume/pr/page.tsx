@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React from "react";
 import { load, useAutosave } from "@/lib/storage/local";
 
@@ -7,8 +7,8 @@ export default function Page() {
     load<string[]>("resume:pr:answers", ["","","","",""])
   );
   const [result, setResult] = React.useState<string>(() => load<string>("resume:pr:result",""));
-  useAutosave("resume:pr:answers", answers, [answers]);
-  useAutosave("resume:pr:result", result, [result]);
+  useAutosave("resume:pr:answers", answers);
+  useAutosave("resume:pr:result", result);
 
   const questions = [
     "1) 強み・得意分野は？",

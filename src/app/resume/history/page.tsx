@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React from "react";
 import { load, useAutosave } from "@/lib/storage/local";
 
@@ -7,7 +7,7 @@ export default function Page() {
   const [rows, setRows] = React.useState<Row[]>(() =>
     load<Row[]>("resume:history", [{ yyyymm:"", org:"", kind:"入学" }])
   );
-  useAutosave("resume:history", rows, [rows]);
+  useAutosave("resume:history", rows);
 
   const update = (i:number, partial:Partial<Row>) =>
     setRows(prev => prev.map((r,idx)=> idx===i ? {...r, ...partial} : r));

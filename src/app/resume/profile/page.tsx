@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React from "react";
 import { load, useAutosave } from "@/lib/storage/local";
 
@@ -11,7 +11,7 @@ export default function Page() {
   const [form, setForm] = React.useState<Profile>(() =>
     load<Profile>("resume:profile", { name:"", birth:"", address:"" })
   );
-  useAutosave("resume:profile", form, [form]);
+  useAutosave("resume:profile", form);
 
   return (
     <div className="space-y-4">
