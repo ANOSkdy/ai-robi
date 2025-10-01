@@ -4,7 +4,6 @@ import "@/styles/a11y.css";
 import Link from "next/link";
 import React from "react";
 import { MainNavigation } from "@/components/ui/MainNavigation";
-import AxeProvider from "@/app/providers/AxeProvider";
 
 export const runtime = "nodejs";
 
@@ -12,7 +11,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja">
       <body className="min-h-screen bg-slate-50 text-slate-900">
-        {process.env.NODE_ENV === "development" ? <AxeProvider /> : null}
         <a
           href="#main"
           className="sr-only focus:absolute focus:left-2 focus:top-2 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-slate-900"
