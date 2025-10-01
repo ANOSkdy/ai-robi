@@ -67,6 +67,11 @@
     box-shadow: none !important;
   }
 
+  .photo-4x3 {
+    width: 32mm !important;
+    height: 24mm !important;
+  }
+
   /* リンク装飾の抑制（下線等） */
   a {
     text-decoration: none !important;
