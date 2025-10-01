@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useI18n } from "@/i18n/i18n";
+
 const NAV_ITEMS = [
-  { href: "/resume/profile", label: "履歴書（プロフィール）" },
-  { href: "/resume/history", label: "履歴書（学歴・職歴・資格）" },
-  { href: "/resume/pr", label: "履歴書（自己PR）" },
-  { href: "/cv", label: "職務経歴書" },
-  { href: "/preview", label: "プレビュー" },
+  { href: "/resume/profile", labelKey: "nav.profile" },
+  { href: "/resume/history", labelKey: "nav.eduwork" },
+  { href: "/resume/pr", labelKey: "nav.pr" },
+  { href: "/cv", labelKey: "cv.title", fallback: "職務経歴書" },
+  { href: "/preview", labelKey: "nav.preview" },
 ];
 
 const isActive = (pathname: string | null, href: string) => {
@@ -18,11 +20,17 @@ const isActive = (pathname: string | null, href: string) => {
 
 export function MainNavigation() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   return (
     <nav role="navigation" aria-label="主要ナビゲーション" className="flex flex-wrap gap-2 text-sm">
       {NAV_ITEMS.map((item) => {
         const active = isActive(pathname, item.href);
+        const label = item.labelKey ? t(item.labelKey) : undefined;
+        const text =
+          item.labelKey && label === item.labelKey && item.fallback
+            ? item.fallback
+            : label ?? item.fallback ?? "";
         return (
           <Link
             key={item.href}
@@ -32,7 +40,7 @@ export function MainNavigation() {
             }`}
             aria-current={active ? "page" : undefined}
           >
-            {item.label}
+            {text}
           </Link>
         );
       })}

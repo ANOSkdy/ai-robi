@@ -1,10 +1,15 @@
+"use client";
+
 import Link from "next/link";
 
+import { useI18n } from "@/i18n/i18n";
+
 export default function Page() {
+  const { t } = useI18n();
   return (
     <div className="space-y-6">
       <section className="rounded-xl bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-semibold text-slate-900">AI-ROBI ドキュメント生成</h1>
+        <h1 className="text-3xl font-semibold text-slate-900">{t("app.title")}</h1>
         <p className="mt-2 text-sm text-slate-600">
           履歴書・職務経歴書の入力フォームに情報を登録し、AI補助でドキュメントを整えましょう。
         </p>
@@ -30,11 +35,11 @@ export default function Page() {
         </div>
       </section>
       <section className="rounded-xl bg-white p-8 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">作業の流れ</h2>
+        <h2 className="text-xl font-semibold text-slate-900">{t("home.flow.title")}</h2>
         <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-slate-700">
-          <li>プロフィール、学歴・職歴・資格、自己PRを順に入力して保存します。</li>
-          <li>必要に応じてAI生成を使い、自己PR文や職務経歴書の原稿を作成します。</li>
-          <li>プレビュー画面で内容を確認し、次のステップ（PDF出力など）へ進みます。</li>
+          <li>{t("home.flow.1")}</li>
+          <li>{t("home.flow.2")}</li>
+          <li>{t("home.flow.3")}</li>
         </ol>
       </section>
     </div>
