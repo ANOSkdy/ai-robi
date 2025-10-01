@@ -1,15 +1,11 @@
-"use client";
-
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useReactToPrint } from "react-to-print";
+import { headers } from "next/headers";
 
 import PrimaryButton from "@/components/ui/PrimaryButton";
-import { useResumeStore } from "@/store/resume";
-import { formatYmd } from "@/lib/date/formatYmd";
+import type { ShareData } from "@/app/api/share/route";
+import { shareDataSchema } from "@/app/api/share/route";
 
-export const displayValue = (value?: string | null) => {
+const displayValue = (value?: string | null) => {
   if (!value) {
     return "未入力";
   }
@@ -18,142 +14,76 @@ export const displayValue = (value?: string | null) => {
   return trimmed.length > 0 ? trimmed : "未入力";
 };
 
-export default function PreviewPage() {
-  const router = useRouter();
-  const { profile, education, employment, licenses, prText, cv, cvText } = useResumeStore((state) => ({
-    profile: state.profile,
-    education: state.education,
-    employment: state.employment,
-    licenses: state.licenses,
-    prText: state.prText,
-    cv: state.cv,
-    cvText: state.cvText,
-  }));
-  const printContentRef = useRef<HTMLDivElement>(null);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [isSharing, setIsSharing] = useState(false);
-  const [shareUrl, setShareUrl] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+const getBaseUrl = async () => {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+  }
 
-  const showToast = useCallback((message: string) => {
-    if (toastTimerRef.current) {
-      clearTimeout(toastTimerRef.current);
-    }
+  const headerList = await headers();
+  const protocol = headerList.get("x-forwarded-proto") ?? "http";
+  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
 
-    setToastMessage(message);
-    toastTimerRef.current = setTimeout(() => {
-      setToastMessage(null);
-      toastTimerRef.current = null;
-    }, 3000);
-  }, []);
+  if (host) {
+    return `${protocol}://${host}`.replace(/\/$/, "");
+  }
 
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) {
-        clearTimeout(toastTimerRef.current);
-      }
-    };
-  }, []);
+  return "http://localhost:3000";
+};
 
-  const documentTitle = useMemo(() => {
-    const base = profile?.name ? `${profile.name}-resume` : "resume-preview";
-    return `${base}-${formatYmd(new Date())}`;
-  }, [profile?.name]);
-
-  const triggerPrint = useReactToPrint({
-    contentRef: printContentRef,
-    documentTitle,
+const fetchShareData = async (token: string): Promise<ShareData | null> => {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}/api/share/${token}`, {
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+    },
   });
 
-  const handlePrint = useCallback(() => {
-    triggerPrint?.();
-  }, [triggerPrint]);
+  if (!response.ok) {
+    return null;
+  }
 
-  const handlePdfDownload = useCallback(() => {
-    triggerPrint?.();
-  }, [triggerPrint]);
+  const json = await response.json();
+  const parsed = shareDataSchema.safeParse(json);
 
-  const handleBack = useCallback(() => {
-    router.push("/");
-  }, [router]);
+  if (!parsed.success) {
+    return null;
+  }
 
-  const copyToClipboard = useCallback(async (value: string) => {
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-      await navigator.clipboard.writeText(value);
-      return true;
-    }
+  return parsed.data;
+};
 
-    try {
-      const textarea = document.createElement("textarea");
-      textarea.value = value;
-      textarea.setAttribute("readonly", "");
-      textarea.style.position = "absolute";
-      textarea.style.left = "-9999px";
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }, []);
+function PrintButton() {
+  "use client";
 
-  const handleShare = useCallback(async () => {
-    if (isSharing) {
-      return;
-    }
+  const handlePrint = () => {
+    window.print();
+  };
 
-    setIsSharing(true);
+  return (
+    <PrimaryButton onClick={handlePrint} aria-label="印刷プレビューを開く">
+      印刷
+    </PrimaryButton>
+  );
+}
 
-    try {
-      const response = await fetch("/api/share", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          resume: {
-            profile,
-            education,
-            employment,
-            licenses,
-            prText,
-          },
-          career: {
-            cv,
-            cvText,
-          },
-        }),
-      });
+export default async function SharePreviewPage({ params }: { params: { token: string } }) {
+  const data = await fetchShareData(params.token);
 
-      if (!response.ok) {
-        throw new Error("Failed to create share link");
-      }
+  if (!data) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 text-center">
+        <div className="space-y-4 rounded-lg bg-white p-8 shadow">
+          <h1 className="text-2xl font-semibold text-slate-900">リンクが無効か期限切れです</h1>
+          <p className="text-sm text-slate-600">共有リンクの有効期限が切れたか、存在しないリンクです。再度発行を依頼してください。</p>
+        </div>
+      </div>
+    );
+  }
 
-      const json = (await response.json()) as { url?: string };
-      if (!json.url) {
-        throw new Error("Invalid response");
-      }
-
-      setShareUrl(json.url);
-      const copied = await copyToClipboard(json.url);
-      showToast(copied ? "共有URLをコピーしました" : "共有URLをコピーできませんでした");
-    } catch (error) {
-      showToast("共有URLの発行に失敗しました");
-    } finally {
-      setIsSharing(false);
-    }
-  }, [copyToClipboard, cv, cvText, education, employment, isSharing, licenses, prText, profile, showToast]);
-
-  const handleCopyShareUrl = useCallback(async () => {
-    if (!shareUrl) {
-      return;
-    }
-
-    const copied = await copyToClipboard(shareUrl);
-    showToast(copied ? "共有URLをコピーしました" : "共有URLをコピーできませんでした");
-  }, [copyToClipboard, shareUrl, showToast]);
+  const { resume, career } = data;
+  const { profile, education, employment, licenses, prText } = resume;
+  const { cv, cvText } = career;
 
   const hasResumeContent =
     displayValue(profile.name) !== "未入力" ||
@@ -176,58 +106,14 @@ export default function PreviewPage() {
   return (
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
       <div className="mx-auto w-full max-w-[820px] px-4 print:w-auto print:max-w-none print:px-0">
-        <div className="mb-4 flex flex-col gap-4 print:hidden" data-hide-on-print>
-          <div className="flex flex-wrap justify-end gap-3">
-            <PrimaryButton onClick={handleShare} loading={isSharing} aria-label="共有リンクを発行する">
-              共有リンクを発行
-            </PrimaryButton>
-            <PrimaryButton onClick={handlePrint} aria-label="印刷プレビューを開く">
-              印刷
-            </PrimaryButton>
-            <PrimaryButton onClick={handlePdfDownload} aria-label="PDFとして保存する">
-              PDFダウンロード
-            </PrimaryButton>
-            <PrimaryButton onClick={handleBack} aria-label="入力画面に戻る">
-              戻る
-            </PrimaryButton>
-          </div>
-
-          {shareUrl ? (
-            <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm" role="group" aria-labelledby="share-link-heading">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex-1 sm:pr-4">
-                  <h2 id="share-link-heading" className="text-sm font-semibold text-slate-900">
-                    共有用リンク（7日後に失効）
-                  </h2>
-                  <p className="mt-1 text-xs text-slate-500">URLを知っている相手のみが閲覧できます。編集やAI生成はできません。</p>
-                </div>
-                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                  <label className="sr-only" htmlFor="share-link-input">
-                    共有用URL
-                  </label>
-                  <input
-                    id="share-link-input"
-                    value={shareUrl}
-                    readOnly
-                    className="w-full flex-1 rounded border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
-                    aria-describedby="share-link-heading"
-                  />
-                  <PrimaryButton onClick={handleCopyShareUrl} aria-label="共有URLをコピーする">
-                    コピー
-                  </PrimaryButton>
-                </div>
-              </div>
-            </div>
-          ) : null}
+        <div className="mb-4 flex justify-end gap-3 print:hidden" data-hide-on-print>
+          <PrintButton />
         </div>
 
-        <div
-          ref={printContentRef}
-          className="print-container print-body mx-auto w-[794px] space-y-8 bg-white p-10 text-black shadow print:w-full print:bg-white print:p-0 print:text-black"
-        >
+        <div className="print-container print-body mx-auto w-[794px] space-y-8 bg-white p-10 text-black shadow print:w-full print:bg-white print:p-0 print:text-black">
           <header className="avoid-break border-b pb-4">
             <h1 className="text-2xl font-semibold text-slate-900">履歴書・職務経歴書プレビュー</h1>
-            <p className="mt-1 text-sm text-slate-600">入力した情報をA4レイアウトで確認できます。</p>
+            <p className="mt-1 text-sm text-slate-600">共有された内容をA4レイアウトで閲覧できます。編集はできません。</p>
           </header>
 
           <section className="section avoid-break">
@@ -240,9 +126,7 @@ export default function PreviewPage() {
                   <div className="space-y-4">
                     <div>
                       <p className="text-lg font-semibold text-slate-900">{displayValue(profile.name)}</p>
-                      {profile.nameKana ? (
-                        <p className="text-sm text-slate-600">{profile.nameKana}</p>
-                      ) : null}
+                      {profile.nameKana ? <p className="text-sm text-slate-600">{profile.nameKana}</p> : null}
                     </div>
                     <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
                       <div>
@@ -423,15 +307,6 @@ export default function PreviewPage() {
           </section>
         </div>
       </div>
-      {toastMessage ? (
-        <div
-          className="fixed bottom-4 left-1/2 z-50 w-[min(90vw,320px)] -translate-x-1/2 rounded-md bg-slate-900 px-4 py-3 text-center text-sm text-white shadow-lg"
-          role="status"
-          aria-live="polite"
-        >
-          {toastMessage}
-        </div>
-      ) : null}
     </div>
   );
 }
