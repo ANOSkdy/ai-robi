@@ -75,6 +75,7 @@ type ResumeStore = {
   licenses: LicenseEntry[];
   prAnswers: string[];
   prText: string;
+  cvText: string;
   cv: CvState;
   cvResult: GeneratedCv | null;
   setProfile: (profile: Profile) => void;
@@ -97,6 +98,8 @@ type ResumeStore = {
   clearPrAnswers: () => void;
   setPrText: (text: string) => void;
   clearPrText: () => void;
+  setCvText: (text: string) => void;
+  clearCvText: () => void;
   updateJobProfile: (profile: Partial<JobProfile>) => void;
   upsertCvExperience: (index: number, experience: CvExperience) => void;
   addCvExperience: (experience?: Partial<CvExperience>) => void;
@@ -155,6 +158,7 @@ const initialState: ResumeStore = {
   licenses: [],
   prAnswers: Array(5).fill(""),
   prText: "",
+  cvText: "",
   cv: {
     jobProfile: {},
     experiences: [],
@@ -180,6 +184,8 @@ const initialState: ResumeStore = {
   clearPrAnswers: () => undefined,
   setPrText: () => undefined,
   clearPrText: () => undefined,
+  setCvText: () => undefined,
+  clearCvText: () => undefined,
   updateJobProfile: () => undefined,
   upsertCvExperience: () => undefined,
   addCvExperience: () => undefined,
@@ -248,6 +254,8 @@ export const useResumeStore = create<ResumeStore>()((set, get) => ({
   clearPrAnswers: () => set(() => ({ prAnswers: Array(5).fill("") })),
   setPrText: (text) => set(() => ({ prText: text })),
   clearPrText: () => set(() => ({ prText: "" })),
+  setCvText: (text) => set(() => ({ cvText: text })),
+  clearCvText: () => set(() => ({ cvText: "" })),
   updateJobProfile: (profile) =>
     set((state) => ({ cv: { ...state.cv, jobProfile: { ...state.cv.jobProfile, ...profile } } })),
   upsertCvExperience: (index, experience) =>
@@ -278,7 +286,7 @@ export const useResumeStore = create<ResumeStore>()((set, get) => ({
       },
     })),
   setCvState: (cv) => set(() => ({ cv: { jobProfile: { ...cv.jobProfile }, experiences: [...cv.experiences] } })),
-  resetCv: () => set(() => ({ cv: { jobProfile: {}, experiences: [] } })),
+  resetCv: () => set(() => ({ cv: { jobProfile: {}, experiences: [] }, cvText: "" })),
   setCvResult: (result) => set(() => ({ cvResult: result })),
   resetAll: () =>
     set(() => ({
@@ -288,6 +296,7 @@ export const useResumeStore = create<ResumeStore>()((set, get) => ({
       licenses: [],
       prAnswers: Array(5).fill(""),
       prText: "",
+      cvText: "",
       cv: { jobProfile: {}, experiences: [] },
       cvResult: null,
     })),

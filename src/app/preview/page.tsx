@@ -20,14 +20,14 @@ export const displayValue = (value?: string | null) => {
 
 export default function PreviewPage() {
   const router = useRouter();
-  const { profile, education, employment, licenses, prText, cv, cvResult } = useResumeStore((state) => ({
+  const { profile, education, employment, licenses, prText, cv, cvText } = useResumeStore((state) => ({
     profile: state.profile,
     education: state.education,
     employment: state.employment,
     licenses: state.licenses,
     prText: state.prText,
     cv: state.cv,
-    cvResult: state.cvResult,
+    cvText: state.cvText,
   }));
   const printContentRef = useRef<HTMLDivElement>(null);
 
@@ -69,7 +69,7 @@ export default function PreviewPage() {
     displayValue(cv.jobProfile.title) !== "未入力" ||
     displayValue(cv.jobProfile.summary) !== "未入力" ||
     cv.experiences.length > 0 ||
-    Boolean(cvResult);
+    (cvText?.trim()?.length ?? 0) > 0;
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
@@ -275,58 +275,12 @@ export default function PreviewPage() {
                   )}
                 </div>
 
-                {cvResult ? (
-                  <div className="card avoid-break space-y-6 rounded-md border border-slate-200 p-6">
-                    <div className="avoid-break space-y-3">
-                      <h3 className="text-lg font-semibold text-slate-900">AI生成サマリー</h3>
-                      <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700">{displayValue(cvResult.summary)}</p>
-                    </div>
-                    <div className="avoid-break space-y-3">
-                      <h3 className="text-lg font-semibold text-slate-900">AIが整理した経験</h3>
-                      <div className="space-y-4">
-                        {cvResult.companies.map((company) => (
-                          <div key={`${company.name}-${company.term}`} className="card avoid-break rounded border border-slate-200 p-4">
-                            <h4 className="text-base font-semibold text-slate-900">
-                              {displayValue(company.name)}（{displayValue(company.term)}）
-                            </h4>
-                            <ul className="mt-2 list-disc space-y-1 pl-5 text-slate-700">
-                              {company.roles.map((role) => (
-                                <li key={`cv-result-role-${company.name}-${role}`} className="avoid-break">
-                                  {displayValue(role)}
-                                </li>
-                              ))}
-                              {company.tasks.map((task) => (
-                                <li key={`cv-result-task-${company.name}-${task}`} className="avoid-break">
-                                  {displayValue(task)}
-                                </li>
-                              ))}
-                              {company.achievements.map((achievement) => (
-                                <li key={`cv-result-achievement-${company.name}-${achievement}`} className="avoid-break">
-                                  {displayValue(achievement)}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="avoid-break space-y-3">
-                      <h3 className="text-lg font-semibold text-slate-900">AI提案：活かせる経験</h3>
-                      <ul className="list-disc space-y-2 pl-5 text-slate-700">
-                        {cvResult.leverage.map((item) => (
-                          <li key={`cv-result-leverage-${item.title}`} className="avoid-break">
-                            <span className="font-semibold">{displayValue(item.title)}：</span>
-                            <span className="ml-1">{displayValue(item.example)}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="avoid-break space-y-3">
-                      <h3 className="text-lg font-semibold text-slate-900">AI生成 自己PR</h3>
-                      <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700">{displayValue(cvResult.selfPR)}</p>
-                    </div>
-                  </div>
-                ) : null}
+                <div className="avoid-break space-y-3">
+                  <h3 className="text-lg font-semibold text-slate-900">職務経歴書本文</h3>
+                  <p className="min-h-[160px] whitespace-pre-line rounded-md border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
+                    {cvText?.trim() ? cvText : "未入力"}
+                  </p>
+                </div>
               </div>
             ) : (
               <p className="text-sm text-slate-500">職務経歴書の情報がまだ入力されていません。</p>

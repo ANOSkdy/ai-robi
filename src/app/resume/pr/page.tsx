@@ -6,8 +6,8 @@ import { z } from "zod";
 import { FormSection } from "@/components/ui/FormSection";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { useResumeStore } from "@/store/resume";
-import { fetchJson, ApiError } from "@/lib/utils/fetchJson";
 import { zResumeForm } from "@/lib/validate/zod";
+import AIGeneratePanel from "@/components/AIGeneratePanel";
 
 const answersSchema = z
   .array(z.string().trim().min(1, "回答を入力してください。"))
@@ -48,9 +48,7 @@ export default function ResumePrPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [previewError, setPreviewError] = useState("");
   const [saved, setSaved] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generateError, setGenerateError] = useState("");
-
+  const [copyError, setCopyError] = useState("");
   const canCopy = typeof navigator !== "undefined" && navigator.clipboard !== undefined;
 
   const resumePayload = useMemo(() => {
@@ -95,8 +93,7 @@ export default function ResumePrPage() {
     setErrorMessage("");
     setFieldErrors(Array(5).fill(""));
 
-    const result = answersSchema.safeParse(answers.map((answer) => answer.trim()))
-;
+    const result = answersSchema.safeParse(answers.map((answer) => answer.trim()));
     if (!result.success) {
       const nextErrors = Array(5).fill("");
       result.error.issues.forEach((issue) => {
@@ -113,28 +110,6 @@ export default function ResumePrPage() {
     setPreviewError("");
     setSaved(true);
     window.setTimeout(() => setSaved(false), 2500);
-  };
-
-  const handleGenerate = async () => {
-    setGenerateError("");
-    setIsGenerating(true);
-    try {
-      const payload = { answers: answers.map((answer) => answer.trim()) };
-      answersSchema.parse(payload.answers);
-      const data = await fetchJson<{ prText: string }>("/api/ai/generate-resume", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      setPrText(data.prText ?? "");
-    } catch (error) {
-      if (error instanceof ApiError) {
-        setGenerateError(error.message);
-      } else {
-        setGenerateError("AIの生成に失敗しました。時間を置いて再度お試しください。");
-      }
-    } finally {
-      setIsGenerating(false);
-    }
   };
 
   const handlePreview = () => {
@@ -157,11 +132,11 @@ export default function ResumePrPage() {
     if (!prText) return;
     try {
       await navigator.clipboard.writeText(prText);
-      setGenerateError("");
+      setCopyError("");
       setSaved(true);
       window.setTimeout(() => setSaved(false), 2500);
     } catch {
-      setGenerateError("コピーに失敗しました。手動で選択してください。");
+      setCopyError("コピーに失敗しました。手動で選択してください。");
     }
   };
 
@@ -199,14 +174,6 @@ export default function ResumePrPage() {
             </button>
             <button
               type="button"
-              onClick={handleGenerate}
-              disabled={isGenerating}
-              className="inline-flex items-center justify-center rounded-md border border-slate-300 px-6 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isGenerating ? "生成中..." : "AIで生成"}
-            </button>
-            <button
-              type="button"
               onClick={handlePreview}
               className="inline-flex items-center justify-center rounded-md border border-slate-300 px-6 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-100"
               aria-label="プレビュー画面へ移動する"
@@ -215,7 +182,15 @@ export default function ResumePrPage() {
             </button>
           </div>
         </div>
-        {generateError ? <ErrorBanner message={generateError} /> : null}
+        <AIGeneratePanel
+          endpoint="/api/ai/generate-resume"
+          payload={{ answers: answers.map((answer) => answer.trim()) }}
+          onApply={(text) => {
+            setPrText(text);
+            setCopyError("");
+          }}
+          buttonLabel="AIで自己PR生成"
+        />
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold text-slate-800">生成された自己PR</h3>
@@ -230,6 +205,7 @@ export default function ResumePrPage() {
             ) : null}
           </div>
           <p className="mt-2 whitespace-pre-line text-sm text-slate-700">{prText || "まだ生成結果はありません。"}</p>
+          {copyError ? <p className="pt-2 text-xs text-red-600">{copyError}</p> : null}
         </div>
       </FormSection>
       {saved ? (

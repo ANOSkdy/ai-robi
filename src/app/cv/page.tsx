@@ -5,7 +5,7 @@ import { z } from "zod";
 import { FormSection } from "@/components/ui/FormSection";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { useResumeStore } from "@/store/resume";
-import { fetchJson, ApiError } from "@/lib/utils/fetchJson";
+import AIGeneratePanel from "@/components/AIGeneratePanel";
 
 const jobProfileSchema = z.object({
   name: z.string().trim().optional().or(z.literal("")),
@@ -37,12 +37,12 @@ const createExperienceRow = (): ExperienceForm => ({
 });
 
 export default function CvPage() {
-  const { cv, profileName, setCvState, setCvResult, cvResult } = useResumeStore((state) => ({
+  const { cv, profileName, setCvState, cvText, setCvText } = useResumeStore((state) => ({
     cv: state.cv,
     profileName: state.profile.name,
     setCvState: state.setCvState,
-    setCvResult: state.setCvResult,
-    cvResult: state.cvResult,
+    cvText: state.cvText,
+    setCvText: state.setCvText,
   }));
 
   const [jobProfile, setJobProfile] = useState<JobProfileForm>(() => ({
@@ -63,8 +63,6 @@ export default function CvPage() {
   const [experienceErrors, setExperienceErrors] = useState<Array<Partial<Record<keyof ExperienceForm, string>>>>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [saved, setSaved] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generateError, setGenerateError] = useState("");
 
   const jobNamePlaceholder = useMemo(() => profileName || "", [profileName]);
 
@@ -141,52 +139,6 @@ export default function CvPage() {
       const next = prev.filter((_, rowIndex) => rowIndex !== index);
       return next.length > 0 ? next : [createExperienceRow()];
     });
-  };
-
-  const handleGenerate = async () => {
-    setGenerateError("");
-    setIsGenerating(true);
-    try {
-      const result = formSchema.parse({ jobProfile, experiences });
-      const payload = {
-        jobProfile: {
-          name: result.jobProfile.name?.trim() || jobNamePlaceholder || undefined,
-          title: result.jobProfile.title,
-          summary: result.jobProfile.summary?.trim() || undefined,
-        },
-        experiences: result.experiences.map((exp) => ({
-          company: exp.company,
-          role: exp.role,
-          period: exp.period,
-          achievements: exp.achievementsText
-            ? exp.achievementsText
-                .split(/\r?\n/)
-                .map((line) => line.trim())
-                .filter(Boolean)
-            : [],
-        })),
-      };
-      const data = await fetchJson<{
-        summary: string;
-        companies: Array<{ name: string; term: string; roles: string[]; tasks: string[]; achievements: string[] }>;
-        leverage: Array<{ title: string; example: string }>;
-        selfPR: string;
-      }>("/api/ai/generate-cv", {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
-      setCvResult(data);
-    } catch (error) {
-      if (error instanceof ApiError) {
-        setGenerateError(error.message);
-      } else if (error instanceof z.ZodError) {
-        setGenerateError("入力内容に不備があります。保存してから再試行してください。");
-      } else {
-        setGenerateError("AIの生成に失敗しました。時間を置いて再度お試しください。");
-      }
-    } finally {
-      setIsGenerating(false);
-    }
   };
 
   return (
@@ -325,63 +277,46 @@ export default function CvPage() {
           >
             保存する
           </button>
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            className="inline-flex items-center justify-center rounded-md border border-slate-300 px-6 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isGenerating ? "生成中..." : "AIで職務経歴書を作成"}
-          </button>
         </div>
       </div>
-      {generateError ? <ErrorBanner message={generateError} /> : null}
-      {cvResult ? (
-        <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <section>
-            <h3 className="text-lg font-semibold text-slate-900">サマリー</h3>
-            <p className="mt-2 whitespace-pre-line text-sm text-slate-700">{cvResult.summary}</p>
-          </section>
-          <section>
-            <h3 className="text-lg font-semibold text-slate-900">主要な経験</h3>
-            <div className="mt-2 space-y-3">
-              {cvResult.companies.map((company) => (
-                <div key={`${company.name}-${company.term}`} className="rounded-lg border border-slate-200 p-4">
-                  <h4 className="text-sm font-semibold text-slate-900">
-                    {company.name}（{company.term}）
-                  </h4>
-                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                    {company.roles.map((role) => (
-                      <li key={role}>{role}</li>
-                    ))}
-                    {company.tasks.map((task) => (
-                      <li key={`${company.name}-${task}`}>{task}</li>
-                    ))}
-                    {company.achievements.map((achievement) => (
-                      <li key={`${company.name}-${achievement}`}>{achievement}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
-          <section>
-            <h3 className="text-lg font-semibold text-slate-900">活かせる経験</h3>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-              {cvResult.leverage.map((item) => (
-                <li key={item.title}>
-                  <span className="font-semibold">{item.title}：</span>
-                  <span className="ml-1">{item.example}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-          <section>
-            <h3 className="text-lg font-semibold text-slate-900">自己PR</h3>
-            <p className="mt-2 whitespace-pre-line text-sm text-slate-700">{cvResult.selfPR}</p>
-          </section>
-        </div>
-      ) : null}
+      <AIGeneratePanel
+        endpoint="/api/ai/generate-career"
+        payload={{
+          profileBrief: [jobProfile.name?.trim() || profileName || "", jobProfile.title?.trim() || "", jobProfile.summary?.trim() || ""]
+            .filter(Boolean)
+            .map((value, index) => {
+              if (index === 0) return `氏名: ${value}`;
+              if (index === 1) return `タイトル: ${value}`;
+              return value;
+            })
+            .join("\n"),
+          companies: experiences.map((experience) => ({
+            company: experience.company.trim(),
+            period: experience.period.trim(),
+            role: experience.role.trim(),
+            achievements: experience.achievementsText
+              ? experience.achievementsText
+                  .split(/\r?\n/)
+                  .map((line) => line.trim())
+                  .filter(Boolean)
+              : [],
+          })),
+        }}
+        onApply={(text) => setCvText(text)}
+        buttonLabel="AIで職務経歴書生成"
+      />
+      <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <label htmlFor="cv-generated-text" className="text-sm font-semibold text-slate-900">
+          職務経歴書本文
+        </label>
+        <textarea
+          id="cv-generated-text"
+          className="min-h-[240px] w-full rounded border border-slate-300 p-3 text-sm"
+          value={cvText}
+          onChange={(event) => setCvText(event.target.value)}
+          aria-label="AI生成した職務経歴書本文"
+        />
+      </div>
       {saved ? (
         <div className="fixed bottom-6 right-6 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-lg">
           保存しました
