@@ -13,7 +13,7 @@ export const runtime = "nodejs";
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
-      <body className="min-h-screen bg-slate-50 text-slate-900">
+      <body className="bg-white text-slate-900">
         <I18nProvider>
           <a
             href="#main"
@@ -21,26 +21,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           >
             コンテンツへスキップ
           </a>
-          <div className="container mx-auto flex w-full max-w-4xl justify-end px-4 pt-2" data-hide-on-print>
-            <LangSwitcher />
-          </div>
-          <header className="border-b bg-white/95 shadow-sm backdrop-blur" data-hide-on-print id="top" role="banner">
-            <div className="container mx-auto flex max-w-4xl flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between">
-              <Link
-                href="/"
-                className="inline-flex items-center text-lg font-semibold tracking-tight text-slate-900"
-              >
+          <header
+            className="app-hd"
+            data-hide-on-print
+            id="top"
+            role="banner"
+          >
+            <div className="container flex items-center justify-between gap-4 py-4">
+              <Link href="/" className="inline-flex items-center text-lg font-semibold tracking-tight text-slate-900">
                 AI-ROBI
               </Link>
-              <MainNavigation />
+              <div className="flex items-center gap-3">
+                <MainNavigation />
+                <LangSwitcher />
+              </div>
             </div>
           </header>
-          <main
-            id="main"
-            role="main"
-            className="container mx-auto min-h-[calc(100vh-5rem)] w-full max-w-4xl px-4 py-6 md:py-10"
-          >
-            {children}
+          <main id="main" role="main" className="app-shell">
+            <div className="container py-6 md:py-10">{children}</div>
           </main>
           <footer className="sr-only" role="contentinfo">
             © AI-ROBI
