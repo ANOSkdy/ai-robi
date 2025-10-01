@@ -49,7 +49,6 @@ async function main() {
   const reportPath = path.join(ctx.rootDir, "docs", "DIAGNOSE.md");
   await fs.mkdir(path.dirname(reportPath), { recursive: true });
   await fs.writeFile(reportPath, markdown, "utf8");
-  // eslint-disable-next-line no-console
   console.log(`診断レポートを生成しました: ${path.relative(ctx.rootDir, reportPath)}`);
 }
 
@@ -713,7 +712,6 @@ async function checkP21(ctx) {
 }
 
 main().catch((error) => {
-  // eslint-disable-next-line no-console
   console.error("診断スクリプトが失敗しました", error);
   process.exit(1);
 });

@@ -10,6 +10,7 @@ import { useResumeStore, type Profile } from "@/store/resume";
 import { DraftRestoreBanner } from "@/components/DraftRestoreBanner";
 import { clearDraft, loadDraft, useAutosave } from "@/hooks/useAutosave";
 import { profileSchema, type ProfileFormData } from "./schema";
+import { useI18n } from "@/i18n/i18n";
 
 const STORAGE_KEY = "airobi:resume:profile:v1";
 
@@ -24,10 +25,15 @@ const toFormData = (profile: Profile): ProfileFormData => ({
 });
 
 export default function ResumeProfilePage() {
+  const { t } = useI18n();
   const { profile, setProfile } = useResumeStore((state) => ({
     profile: state.profile,
     setProfile: state.setProfile,
   }));
+  const profileTitle = t("profile.title");
+  const sectionTitle = profileTitle === "profile.title" ? "履歴書：プロフィール" : profileTitle;
+  const saveLabel = t("common.save");
+  const saveText = saveLabel === "common.save" ? "保存する" : saveLabel;
 
   const [formData, setFormData] = useState<ProfileFormData>(() => toFormData(profile));
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof ProfileFormData, string>>>({});
@@ -114,7 +120,7 @@ export default function ResumeProfilePage() {
           setDraft(undefined);
         }}
       />
-      <FormSection title="履歴書：プロフィール" description="基本情報を入力してください。">
+      <FormSection title={sectionTitle} description="基本情報を入力してください。">
         {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
         {errorCount > 0 ? (
           <div
@@ -130,7 +136,7 @@ export default function ResumeProfilePage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <label htmlFor="name" className="text-sm font-medium text-slate-800">
-                  氏名 <span className="text-red-500">*</span>
+                  {t("profile.name")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="name"
@@ -148,7 +154,7 @@ export default function ResumeProfilePage() {
               </div>
               <div className="flex flex-col gap-2">
                 <label htmlFor="nameKana" className="text-sm font-medium text-slate-800">
-                  フリガナ
+                  {t("profile.kana")}
                 </label>
                 <input
                   id="nameKana"
@@ -161,7 +167,7 @@ export default function ResumeProfilePage() {
               </div>
               <div className="flex flex-col gap-2">
                 <label htmlFor="birth" className="text-sm font-medium text-slate-800">
-                  生年月日 <span className="text-red-500">*</span>
+                  {t("profile.birth")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="birth"
@@ -179,7 +185,7 @@ export default function ResumeProfilePage() {
               </div>
               <div className="flex flex-col gap-2">
                 <label htmlFor="phone" className="text-sm font-medium text-slate-800">
-                  電話番号 <span className="text-red-500">*</span>
+                  {t("profile.phone")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="phone"
@@ -198,7 +204,7 @@ export default function ResumeProfilePage() {
               </div>
               <div className="flex flex-col gap-2 sm:col-span-2">
                 <label htmlFor="address" className="text-sm font-medium text-slate-800">
-                  住所 <span className="text-red-500">*</span>
+                  {t("profile.address")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="address"
@@ -216,7 +222,7 @@ export default function ResumeProfilePage() {
               </div>
               <div className="flex flex-col gap-2">
                 <label htmlFor="email" className="text-sm font-medium text-slate-800">
-                  メールアドレス <span className="text-red-500">*</span>
+                  {t("profile.email")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="email"
@@ -269,7 +275,7 @@ export default function ResumeProfilePage() {
               type="submit"
               className="inline-flex items-center justify-center rounded-md bg-slate-900 px-6 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-800"
             >
-              保存する
+              {saveText}
             </button>
             <Link
               href="/resume/history"

@@ -5,14 +5,17 @@ import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
 
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import { useI18n } from "@/i18n/i18n";
 import { useResumeStore } from "@/store/resume";
 import { useTemplateStore } from "@/store/template";
 import { formatYmd } from "@/lib/date/formatYmd";
 import { getResumeTemplate, resumeTemplates } from "@/templates/registry";
 import type { ResumeData, TemplateId } from "@/templates/types";
+import { toResumeData } from "@/templates/toResumeData";
 
 export default function PreviewPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const { profile, education, employment, licenses, prText, prAnswers, cv, cvText } = useResumeStore((state) => ({
     profile: state.profile,
     education: state.education,
@@ -164,20 +167,7 @@ export default function PreviewPage() {
     showToast(copied ? "共有URLをコピーしました" : "共有URLをコピーできませんでした");
   }, [copyToClipboard, shareUrl, showToast]);
 
-  const resumeData = useMemo(
-    () =>
-      buildResumeData({
-        profile,
-        education,
-        employment,
-        licenses,
-        prText,
-        prAnswers,
-        cvText,
-        cv,
-      }),
-    [profile, education, employment, licenses, prText, prAnswers, cvText, cv],
-  );
+  const resumeData = toResumeData();
 
   const hasAnyContent = useMemo(() => hasResumeDataContent(resumeData), [resumeData]);
 
@@ -190,7 +180,7 @@ export default function PreviewPage() {
           <div className="flex flex-wrap items-center justify-end gap-3">
             <div className="flex items-center gap-2">
               <label htmlFor="template-select" className="text-sm font-medium text-slate-700">
-                テンプレート
+                {t("preview.template")}
               </label>
               <select
                 id="template-select"
@@ -206,10 +196,10 @@ export default function PreviewPage() {
               </select>
             </div>
             <PrimaryButton onClick={handleShare} loading={isSharing} aria-label="共有リンクを発行する">
-              共有リンクを発行
+              {t("share.create")}
             </PrimaryButton>
             <PrimaryButton onClick={handlePrint} aria-label="印刷プレビューを開く">
-              印刷
+              {t("preview.print")}
             </PrimaryButton>
             <PrimaryButton onClick={handlePdfDownload} aria-label="PDFとして保存する">
               PDFダウンロード
@@ -274,106 +264,11 @@ export default function PreviewPage() {
   );
 }
 
-type BuildResumeDataParams = {
-  profile: ReturnType<typeof useResumeStore.getState>["profile"];
-  education: ReturnType<typeof useResumeStore.getState>["education"];
-  employment: ReturnType<typeof useResumeStore.getState>["employment"];
-  licenses: ReturnType<typeof useResumeStore.getState>["licenses"];
-  prText: ReturnType<typeof useResumeStore.getState>["prText"];
-  prAnswers: ReturnType<typeof useResumeStore.getState>["prAnswers"];
-  cvText: ReturnType<typeof useResumeStore.getState>["cvText"];
-  cv: ReturnType<typeof useResumeStore.getState>["cv"];
-};
-
 const textHasValue = (value?: string | null) => {
   if (!value) {
     return false;
   }
   return value.trim().length > 0;
-};
-
-const buildResumeData = ({
-  profile,
-  education,
-  employment,
-  licenses,
-  prText,
-  prAnswers,
-  cvText,
-  cv,
-}: BuildResumeDataParams): ResumeData => {
-  const trimmedPrText = prText.trim();
-  const filteredAnswers = prAnswers.map((answer) => answer.trim()).filter((answer) => answer.length > 0);
-  const prData =
-    trimmedPrText.length > 0 || filteredAnswers.length > 0
-      ? {
-          generated: trimmedPrText.length > 0 ? trimmedPrText : undefined,
-          answers: filteredAnswers.length > 0 ? filteredAnswers : undefined,
-        }
-      : undefined;
-
-  const combinedCareerText = (() => {
-    const explicitCvText = cvText.trim();
-    if (explicitCvText.length > 0) {
-      return explicitCvText;
-    }
-
-    const jobProfileParts = [
-      cv.jobProfile.name ? `氏名: ${cv.jobProfile.name}` : null,
-      cv.jobProfile.title ? `タイトル: ${cv.jobProfile.title}` : null,
-      cv.jobProfile.summary ? `要約: ${cv.jobProfile.summary}` : null,
-    ].filter((part): part is string => part !== null);
-
-    const experienceParts = cv.experiences
-      .map((experience) => {
-        const achievements = experience.achievements
-          .map((achievement) => achievement.trim())
-          .filter((achievement) => achievement.length > 0);
-        const achievementText = achievements.length > 0 ? `\n・${achievements.join("\n・")}` : "";
-        const period = experience.period ? `${experience.period}` : "";
-        const role = experience.role ? `／${experience.role}` : "";
-        return `${period} ${experience.company}${role}${achievementText}`.trim();
-      })
-      .filter((entry) => entry.length > 0);
-
-    const sections = [...jobProfileParts, ...experienceParts];
-    if (sections.length === 0) {
-      return undefined;
-    }
-    return sections.join("\n\n");
-  })();
-
-  return {
-    profile: {
-      name: profile.name,
-      nameKana: profile.nameKana || undefined,
-      birth: textHasValue(profile.birth) ? profile.birth : undefined,
-      address: profile.address,
-      phone: profile.phone,
-      email: profile.email,
-      avatarUrl: profile.avatarUrl || undefined,
-    },
-    education: education.map((entry) => ({
-      start: entry.start,
-      end: entry.end || undefined,
-      title: entry.school,
-      detail: entry.degree || undefined,
-      status: entry.status,
-    })),
-    work: employment.map((entry) => ({
-      start: entry.start,
-      end: entry.end || undefined,
-      title: entry.company,
-      detail: entry.role,
-      status: entry.status,
-    })),
-    licenses: licenses.map((entry) => ({
-      name: entry.name,
-      acquiredOn: entry.obtainedOn || undefined,
-    })),
-    pr: prData,
-    career: combinedCareerText ? { generatedCareer: combinedCareerText } : undefined,
-  };
 };
 
 const hasResumeDataContent = (data: ResumeData) => {
