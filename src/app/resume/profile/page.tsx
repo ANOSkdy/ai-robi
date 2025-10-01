@@ -46,6 +46,11 @@ export default function ResumeProfilePage() {
     return formData.avatarUrl.trim();
   }, [formData.avatarUrl]);
 
+  const errorCount = useMemo(
+    () => Object.values(fieldErrors).filter((value): value is string => Boolean(value)).length,
+    [fieldErrors],
+  );
+
   const handleChange = <K extends keyof ProfileFormData>(key: K, value: ProfileFormData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
@@ -111,6 +116,15 @@ export default function ResumeProfilePage() {
       />
       <FormSection title="履歴書：プロフィール" description="基本情報を入力してください。">
         {errorMessage ? <ErrorBanner message={errorMessage} /> : null}
+        {errorCount > 0 ? (
+          <div
+            role="alert"
+            aria-live="polite"
+            className="rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700"
+          >
+            必須項目の未入力または不正な入力があります（{errorCount}件）
+          </div>
+        ) : null}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[2fr_minmax(0,1fr)]">
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">

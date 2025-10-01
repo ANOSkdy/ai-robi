@@ -140,7 +140,11 @@ export default async function SharePreviewPage({ params }: { params: { token: st
   if (!data) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 text-center">
-        <div className="space-y-4 rounded-lg bg-white p-8 shadow">
+        <div
+          role="status"
+          aria-live="polite"
+          className="space-y-4 rounded-lg bg-white p-8 shadow"
+        >
           <h1 className="text-2xl font-semibold text-slate-900">リンクが無効か期限切れです</h1>
           <p className="text-sm text-slate-600">共有リンクの有効期限が切れたか、存在しないリンクです。再度発行を依頼してください。</p>
         </div>
@@ -154,8 +158,14 @@ export default async function SharePreviewPage({ params }: { params: { token: st
   return (
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
       <div className="mx-auto w-full max-w-[820px] px-4 print:w-auto print:max-w-none print:px-0">
-        <div className="mb-4 flex justify-end gap-3 print:hidden" data-hide-on-print>
-          <PrintButton />
+        <div
+          className="mb-6 flex flex-col gap-3 print:hidden sm:flex-row sm:items-center sm:justify-between"
+          data-hide-on-print
+        >
+          <h1 className="text-2xl font-semibold text-slate-900">共有プレビュー</h1>
+          <div className="flex justify-end">
+            <PrintButton />
+          </div>
         </div>
 
         <SharePreviewClient data={resumeData} templateId={templateId} />

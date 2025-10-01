@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { getCroppedImageDataURL, type CropArea } from "@/lib/image/cropAndCompress";
 
@@ -44,8 +44,14 @@ export default function PhotoUploader({
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const modalRef = useRef<HTMLDivElement | null>(null);
   const dragRef = useRef<DragState | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
   const [containerSize, setContainerSize] = useState<Dimensions>({ width: 0, height: 0 });
+  const fileInputId = useId();
+  const previewId = useId();
+  const dialogTitleId = useId();
 
   const outputConfig = useMemo(() => ({
     width: output.width,
@@ -93,6 +99,79 @@ export default function PhotoUploader({
       y: clamp(prev.y, -constraints.maxY, constraints.maxY),
     }));
   }, [constraints]);
+
+  useEffect(() => {
+    if (!source) {
+      return;
+    }
+
+    previousActiveElementRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const node = modalRef.current;
+    if (!node) {
+      return;
+    }
+
+    const focusableSelector =
+      "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
+    const getFocusableElements = () =>
+      Array.from(node.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+        (element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true",
+      );
+
+    const focusInitial = () => {
+      const elements = getFocusableElements();
+      if (elements.length > 0) {
+        elements[0].focus();
+      } else {
+        node.focus();
+      }
+    };
+
+    focusInitial();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSource(null);
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const elements = getFocusableElements();
+      if (elements.length === 0) {
+        event.preventDefault();
+        node.focus();
+        return;
+      }
+
+      const current = document.activeElement as HTMLElement | null;
+      const currentIndex = current ? elements.indexOf(current) : -1;
+      let nextIndex = 0;
+
+      if (event.shiftKey) {
+        nextIndex = currentIndex <= 0 ? elements.length - 1 : currentIndex - 1;
+      } else {
+        nextIndex = currentIndex === elements.length - 1 ? 0 : currentIndex + 1;
+      }
+
+      event.preventDefault();
+      elements[nextIndex]?.focus();
+    };
+
+    node.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      node.removeEventListener("keydown", handleKeyDown);
+      const previous = previousActiveElementRef.current;
+      if (previous && typeof previous.focus === "function") {
+        previous.focus();
+      }
+    };
+  }, [setSource, source]);
 
   const handleFile = async (file: File) => {
     setError(null);
@@ -202,7 +281,7 @@ export default function PhotoUploader({
   return (
     <div className={className}>
       <div className="flex flex-col gap-2">
-        <div className="h-24 w-32 overflow-hidden rounded border bg-slate-50">
+        <div id={previewId} className="h-24 w-32 overflow-hidden rounded border bg-slate-50">
           {hasValue ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={value} alt="プロフィール写真" className="photo-4x3 h-full w-full object-cover" />
@@ -211,9 +290,20 @@ export default function PhotoUploader({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-2" data-hide-on-print>
-          <label className="inline-flex cursor-pointer items-center gap-2 rounded border px-3 py-1 text-sm text-slate-700">
+          <input
+            id={fileInputId}
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={handleSelect}
+          />
+          <label
+            htmlFor={fileInputId}
+            aria-controls={previewId}
+            className="inline-flex cursor-pointer items-center gap-2 rounded border px-3 py-1 text-sm text-slate-700"
+          >
             <span>画像を選択</span>
-            <input type="file" accept="image/*" className="sr-only" onChange={handleSelect} />
           </label>
           <div
             onDragOver={(event) => event.preventDefault()}
@@ -221,13 +311,14 @@ export default function PhotoUploader({
             role="button"
             tabIndex={0}
             onKeyDown={(event) => {
-              if ((event.key === "Enter" || event.key === " ") && event.currentTarget instanceof HTMLElement) {
-                const input = event.currentTarget.previousElementSibling?.querySelector<HTMLInputElement>("input[type='file']");
-                input?.click();
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                fileInputRef.current?.click();
               }
             }}
             className="rounded border px-3 py-1 text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-slate-400"
             aria-label="ここに画像ファイルをドラッグ＆ドロップ"
+            onClick={() => fileInputRef.current?.click()}
           >
             ここにドラッグ&ドロップ
           </div>
@@ -249,8 +340,17 @@ export default function PhotoUploader({
 
       {source ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" data-hide-on-print>
-          <div className="w-full max-w-3xl rounded-lg bg-white p-4 shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">画像のトリミング</h2>
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={dialogTitleId}
+            className="w-full max-w-3xl rounded-lg bg-white p-4 shadow-xl"
+            tabIndex={-1}
+          >
+            <h2 id={dialogTitleId} className="text-lg font-semibold text-slate-900">
+              画像のトリミング
+            </h2>
             <p className="mt-1 text-sm text-slate-600">ドラッグで位置を調整し、スライダーで拡大・縮小してください。</p>
             <div className="mt-4 flex flex-col gap-4">
               <div
