@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI-ROBI
 
-## Getting Started
+AI-ROBI は、履歴書/職務経歴書の作成を支援する Next.js アプリです。
+**P7〜P13, P19, P20** を実装済みで、印刷最適化・テンプレ切替・i18n・写真トリミング・共有リンク・E2E 基本テストを備えています。
+※ 管理画面・認証・下書きサーバ同期・監視（P14〜P18）は **当面対象外** です。
 
-First, run the development server:
+## クイックスタート（開発）
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm i
 pnpm dev
-# or
-bun dev
+# http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+必須環境変数
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- `GEMINI_API_KEY` : AI生成（自己PR/職務経歴）
+- `KV_REST_API_URL`, `KV_REST_API_TOKEN` : 共有リンク（P10）
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`.env.example` を参照してください。
 
-## Learn More
+## 機能ハイライト
 
-To learn more about Next.js, take a look at the following resources:
+- 印刷最適化 (P7): ブラウザ印刷でPDF出力/改ページ制御
+- フォーム自動保存・Zodバリデーション (P8)
+- AI生成テンプレ最適化 (P9)
+- 共有リンク（署名トークン/期限） (P10)
+- テンプレ切替（standard/jis/company-simple） (P11)
+- i18n（ja/en）・かな/ローマ字補助 (P12)
+- 写真 4:3 トリミング＆圧縮 (P13)
+- アクセシビリティ改善 (P19)
+- E2E テスト雛形（ローカル実行前提） (P20)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## ディレクトリ構成（抜粋）
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+  app/                # Next.js App Router
+    preview/          # プレビュー/印刷
+    share/            # 共有閲覧
+    api/              # APIルート
+  components/         # UIコンポーネント
+  templates/          # テンプレレイアウト
+  i18n/               # 多言語
+  hooks/ lib/ store/  # フック・共通処理・状態
 
-## Deploy on Vercel
+tests/
+  e2e/                # Playwright（ローカル実行）
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## よくある質問
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Q: 認証は？**
+A: 現時点のスコープ外（P15除外）。共有リンクはトークンベースの閲覧専用です。
+
+**Q: サーバPDFやDOCX出力は？**
+A: ブラウザ印刷（P7）で代替。拡張（P16）は未実施。
+
+**Q: テストは？**
+A: E2E 雛形を提供（P20）。CI では実行しません（依存の都合上）。
+
+関連ドキュメント: [USER_GUIDE.md](docs/USER_GUIDE.md) / [ADMIN_GUIDE.md](docs/ADMIN_GUIDE.md) / [DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) / [CONTRIBUTING.md](CONTRIBUTING.md) / [CHANGELOG.md](CHANGELOG.md)
