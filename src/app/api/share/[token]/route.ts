@@ -85,7 +85,15 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(kvData.data, { status: 200 });
+    const data = kvData.data;
+
+    return NextResponse.json(
+      {
+        ...data,
+        templateId: data.templateId ?? "standard",
+      },
+      { status: 200 },
+    );
   } catch (error) {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }

@@ -1,31 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
 
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import { useResumeStore } from "@/store/resume";
+import { useTemplateStore } from "@/store/template";
 import { formatYmd } from "@/lib/date/formatYmd";
-
-export const displayValue = (value?: string | null) => {
-  if (!value) {
-    return "未入力";
-  }
-
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : "未入力";
-};
+import { getResumeTemplate, resumeTemplates } from "@/templates/registry";
+import type { ResumeData, TemplateId } from "@/templates/types";
 
 export default function PreviewPage() {
   const router = useRouter();
-  const { profile, education, employment, licenses, prText, cv, cvText } = useResumeStore((state) => ({
+  const { profile, education, employment, licenses, prText, prAnswers, cv, cvText } = useResumeStore((state) => ({
     profile: state.profile,
     education: state.education,
     employment: state.employment,
     licenses: state.licenses,
     prText: state.prText,
+    prAnswers: state.prAnswers,
     cv: state.cv,
     cvText: state.cvText,
   }));
@@ -34,6 +28,8 @@ export default function PreviewPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const templateId = useTemplateStore((state) => state.template);
+  const setTemplate = useTemplateStore((state) => state.setTemplate);
 
   const showToast = useCallback((message: string) => {
     if (toastTimerRef.current) {
@@ -113,6 +109,7 @@ export default function PreviewPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          templateId,
           resume: {
             profile,
             education,
@@ -144,7 +141,19 @@ export default function PreviewPage() {
     } finally {
       setIsSharing(false);
     }
-  }, [copyToClipboard, cv, cvText, education, employment, isSharing, licenses, prText, profile, showToast]);
+  }, [
+    copyToClipboard,
+    cv,
+    cvText,
+    education,
+    employment,
+    isSharing,
+    licenses,
+    prText,
+    profile,
+    showToast,
+    templateId,
+  ]);
 
   const handleCopyShareUrl = useCallback(async () => {
     if (!shareUrl) {
@@ -155,29 +164,47 @@ export default function PreviewPage() {
     showToast(copied ? "共有URLをコピーしました" : "共有URLをコピーできませんでした");
   }, [copyToClipboard, shareUrl, showToast]);
 
-  const hasResumeContent =
-    displayValue(profile.name) !== "未入力" ||
-    displayValue(profile.address) !== "未入力" ||
-    displayValue(profile.phone) !== "未入力" ||
-    displayValue(profile.email) !== "未入力" ||
-    displayValue(profile.birth) !== "未入力" ||
-    education.length > 0 ||
-    employment.length > 0 ||
-    licenses.length > 0 ||
-    (prText?.trim()?.length ?? 0) > 0;
+  const resumeData = useMemo(
+    () =>
+      buildResumeData({
+        profile,
+        education,
+        employment,
+        licenses,
+        prText,
+        prAnswers,
+        cvText,
+        cv,
+      }),
+    [profile, education, employment, licenses, prText, prAnswers, cvText, cv],
+  );
 
-  const hasCvContent =
-    displayValue(cv.jobProfile.name) !== "未入力" ||
-    displayValue(cv.jobProfile.title) !== "未入力" ||
-    displayValue(cv.jobProfile.summary) !== "未入力" ||
-    cv.experiences.length > 0 ||
-    (cvText?.trim()?.length ?? 0) > 0;
+  const hasAnyContent = useMemo(() => hasResumeDataContent(resumeData), [resumeData]);
+
+  const template = getResumeTemplate(templateId);
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
       <div className="mx-auto w-full max-w-[820px] px-4 print:w-auto print:max-w-none print:px-0">
         <div className="mb-4 flex flex-col gap-4 print:hidden" data-hide-on-print>
-          <div className="flex flex-wrap justify-end gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <div className="flex items-center gap-2">
+              <label htmlFor="template-select" className="text-sm font-medium text-slate-700">
+                テンプレート
+              </label>
+              <select
+                id="template-select"
+                className="rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                value={templateId}
+                onChange={(event) => setTemplate(event.target.value as TemplateId)}
+              >
+                {resumeTemplates.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <PrimaryButton onClick={handleShare} loading={isSharing} aria-label="共有リンクを発行する">
               共有リンクを発行
             </PrimaryButton>
@@ -223,204 +250,15 @@ export default function PreviewPage() {
 
         <div
           ref={printContentRef}
-          className="print-container print-body mx-auto w-[794px] space-y-8 bg-white p-10 text-black shadow print:w-full print:bg-white print:p-0 print:text-black"
+          className="print-container mx-auto w-[794px] bg-white p-10 text-black shadow print:w-full print:bg-white print:p-0 print:text-black"
         >
-          <header className="avoid-break border-b pb-4">
-            <h1 className="text-2xl font-semibold text-slate-900">履歴書・職務経歴書プレビュー</h1>
-            <p className="mt-1 text-sm text-slate-600">入力した情報をA4レイアウトで確認できます。</p>
-          </header>
-
-          <section className="section avoid-break">
-            <div className="mb-6 border-b pb-4">
-              <h2 className="text-xl font-semibold text-slate-900">履歴書</h2>
+          {hasAnyContent ? (
+            template.component(resumeData)
+          ) : (
+            <div className="flex min-h-[400px] items-center justify-center text-sm text-slate-500">
+              履歴書・職務経歴書の内容がまだ入力されていません。
             </div>
-            {hasResumeContent ? (
-              <div className="space-y-8 text-sm text-slate-800">
-                <div className="avoid-break grid gap-6 md:grid-cols-[1fr_auto]">
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-lg font-semibold text-slate-900">{displayValue(profile.name)}</p>
-                      {profile.nameKana ? (
-                        <p className="text-sm text-slate-600">{profile.nameKana}</p>
-                      ) : null}
-                    </div>
-                    <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-                      <div>
-                        <dt className="text-xs uppercase tracking-wide text-slate-500">生年月日</dt>
-                        <dd className="text-sm">{displayValue(profile.birth)}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs uppercase tracking-wide text-slate-500">電話番号</dt>
-                        <dd className="text-sm">{displayValue(profile.phone)}</dd>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <dt className="text-xs uppercase tracking-wide text-slate-500">メール</dt>
-                        <dd className="text-sm">{displayValue(profile.email)}</dd>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <dt className="text-xs uppercase tracking-wide text-slate-500">住所</dt>
-                        <dd className="text-sm">{displayValue(profile.address)}</dd>
-                      </div>
-                    </dl>
-                  </div>
-                  <div className="flex w-full justify-end">
-                    <div className="photo-4x3 relative aspect-[4/3] w-full max-w-[160px] overflow-hidden rounded-md border border-slate-200 bg-slate-200">
-                      {profile.avatarUrl ? (
-                        <Image
-                          src={profile.avatarUrl}
-                          alt="プロフィール画像"
-                          fill
-                          className="object-cover"
-                          sizes="160px"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">No Image</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="avoid-break space-y-4">
-                  <h3 className="text-lg font-semibold text-slate-900">学歴</h3>
-                  {education.length > 0 ? (
-                    <ul className="space-y-3">
-                      {education.map((entry, index) => (
-                        <li
-                          key={`education-${index}`}
-                          className="entry avoid-break flex flex-col gap-1 md:flex-row md:items-center md:justify-between"
-                        >
-                          <span className="font-medium text-slate-900">{displayValue(entry.school)}</span>
-                          <span className="text-slate-600">
-                            {displayValue(entry.start)} 〜 {displayValue(entry.end)} ／ {displayValue(entry.status)}
-                            {entry.degree ? `（${entry.degree}）` : ""}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-slate-500">未入力</p>
-                  )}
-                </div>
-
-                <div className="avoid-break space-y-4">
-                  <h3 className="text-lg font-semibold text-slate-900">職歴</h3>
-                  {employment.length > 0 ? (
-                    <ul className="space-y-3">
-                      {employment.map((entry, index) => (
-                        <li
-                          key={`employment-${index}`}
-                          className="entry avoid-break flex flex-col gap-1 md:flex-row md:items-center md:justify-between"
-                        >
-                          <span className="font-medium text-slate-900">{displayValue(entry.company)}</span>
-                          <span className="text-slate-600">
-                            {displayValue(entry.start)} 〜 {displayValue(entry.end)} ／ {displayValue(entry.role)} ／ {displayValue(entry.status)}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-slate-500">未入力</p>
-                  )}
-                </div>
-
-                <div className="avoid-break space-y-4">
-                  <h3 className="text-lg font-semibold text-slate-900">資格・免許</h3>
-                  {licenses.length > 0 ? (
-                    <ul className="space-y-2">
-                      {licenses.map((entry, index) => (
-                        <li
-                          key={`license-${index}`}
-                          className="entry avoid-break flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          <span className="font-medium text-slate-900">{displayValue(entry.name)}</span>
-                          <span className="text-slate-600">取得：{displayValue(entry.obtainedOn)}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-slate-500">未入力</p>
-                  )}
-                </div>
-
-                <div className="avoid-break space-y-3">
-                  <h3 className="text-lg font-semibold text-slate-900">自己PR</h3>
-                  <p className="min-h-[120px] whitespace-pre-line rounded-md border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
-                    {prText?.trim() ? prText : "未入力"}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500">履歴書情報がまだ入力されていません。</p>
-            )}
-          </section>
-
-          <section className="section avoid-break">
-            <div className="mb-6 border-b pb-4">
-              <h2 className="text-xl font-semibold text-slate-900">職務経歴書</h2>
-            </div>
-            {hasCvContent ? (
-              <div className="space-y-8 text-sm text-slate-800">
-                <div className="avoid-break space-y-3">
-                  <h3 className="text-lg font-semibold text-slate-900">職務プロフィール</h3>
-                  <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-                    <div>
-                      <dt className="text-xs uppercase tracking-wide text-slate-500">氏名</dt>
-                      <dd>{displayValue(cv.jobProfile.name) !== "未入力" ? cv.jobProfile.name : displayValue(profile.name)}</dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs uppercase tracking-wide text-slate-500">タイトル</dt>
-                      <dd>{displayValue(cv.jobProfile.title)}</dd>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <dt className="text-xs uppercase tracking-wide text-slate-500">要約</dt>
-                      <dd>{displayValue(cv.jobProfile.summary)}</dd>
-                    </div>
-                  </dl>
-                </div>
-
-                <div className="avoid-break space-y-4">
-                  <h3 className="text-lg font-semibold text-slate-900">経験</h3>
-                  {cv.experiences.length > 0 ? (
-                    <div className="space-y-6">
-                      {cv.experiences.map((experience, index) => (
-                        <div key={`cv-experience-${index}`} className="entry avoid-break space-y-3">
-                          <div className="avoid-break border-b pb-2">
-                            <h4 className="text-base font-semibold text-slate-900">{displayValue(experience.company)}</h4>
-                            <p className="text-sm text-slate-600">
-                              {displayValue(experience.period)} ／ {displayValue(experience.role)}
-                            </p>
-                          </div>
-                          {experience.achievements.length > 0 ? (
-                            <ul className="list-disc space-y-2 pl-5">
-                              {experience.achievements.map((achievement, achievementIndex) => (
-                                <li key={`achievement-${index}-${achievementIndex}`} className="avoid-break text-slate-700">
-                                  {displayValue(achievement)}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="text-slate-500">未入力</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-slate-500">未入力</p>
-                  )}
-                </div>
-
-                <div className="avoid-break space-y-3">
-                  <h3 className="text-lg font-semibold text-slate-900">職務経歴書本文</h3>
-                  <p className="min-h-[160px] whitespace-pre-line rounded-md border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700">
-                    {cvText?.trim() ? cvText : "未入力"}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-slate-500">職務経歴書の情報がまだ入力されていません。</p>
-            )}
-          </section>
+          )}
         </div>
       </div>
       {toastMessage ? (
@@ -435,3 +273,125 @@ export default function PreviewPage() {
     </div>
   );
 }
+
+type BuildResumeDataParams = {
+  profile: ReturnType<typeof useResumeStore.getState>["profile"];
+  education: ReturnType<typeof useResumeStore.getState>["education"];
+  employment: ReturnType<typeof useResumeStore.getState>["employment"];
+  licenses: ReturnType<typeof useResumeStore.getState>["licenses"];
+  prText: ReturnType<typeof useResumeStore.getState>["prText"];
+  prAnswers: ReturnType<typeof useResumeStore.getState>["prAnswers"];
+  cvText: ReturnType<typeof useResumeStore.getState>["cvText"];
+  cv: ReturnType<typeof useResumeStore.getState>["cv"];
+};
+
+const textHasValue = (value?: string | null) => {
+  if (!value) {
+    return false;
+  }
+  return value.trim().length > 0;
+};
+
+const buildResumeData = ({
+  profile,
+  education,
+  employment,
+  licenses,
+  prText,
+  prAnswers,
+  cvText,
+  cv,
+}: BuildResumeDataParams): ResumeData => {
+  const trimmedPrText = prText.trim();
+  const filteredAnswers = prAnswers.map((answer) => answer.trim()).filter((answer) => answer.length > 0);
+  const prData =
+    trimmedPrText.length > 0 || filteredAnswers.length > 0
+      ? {
+          generated: trimmedPrText.length > 0 ? trimmedPrText : undefined,
+          answers: filteredAnswers.length > 0 ? filteredAnswers : undefined,
+        }
+      : undefined;
+
+  const combinedCareerText = (() => {
+    const explicitCvText = cvText.trim();
+    if (explicitCvText.length > 0) {
+      return explicitCvText;
+    }
+
+    const jobProfileParts = [
+      cv.jobProfile.name ? `氏名: ${cv.jobProfile.name}` : null,
+      cv.jobProfile.title ? `タイトル: ${cv.jobProfile.title}` : null,
+      cv.jobProfile.summary ? `要約: ${cv.jobProfile.summary}` : null,
+    ].filter((part): part is string => part !== null);
+
+    const experienceParts = cv.experiences
+      .map((experience) => {
+        const achievements = experience.achievements
+          .map((achievement) => achievement.trim())
+          .filter((achievement) => achievement.length > 0);
+        const achievementText = achievements.length > 0 ? `\n・${achievements.join("\n・")}` : "";
+        const period = experience.period ? `${experience.period}` : "";
+        const role = experience.role ? `／${experience.role}` : "";
+        return `${period} ${experience.company}${role}${achievementText}`.trim();
+      })
+      .filter((entry) => entry.length > 0);
+
+    const sections = [...jobProfileParts, ...experienceParts];
+    if (sections.length === 0) {
+      return undefined;
+    }
+    return sections.join("\n\n");
+  })();
+
+  return {
+    profile: {
+      name: profile.name,
+      nameKana: profile.nameKana || undefined,
+      birth: textHasValue(profile.birth) ? profile.birth : undefined,
+      address: profile.address,
+      phone: profile.phone,
+      email: profile.email,
+      avatarUrl: profile.avatarUrl || undefined,
+    },
+    education: education.map((entry) => ({
+      start: entry.start,
+      end: entry.end || undefined,
+      title: entry.school,
+      detail: entry.degree || undefined,
+      status: entry.status,
+    })),
+    work: employment.map((entry) => ({
+      start: entry.start,
+      end: entry.end || undefined,
+      title: entry.company,
+      detail: entry.role,
+      status: entry.status,
+    })),
+    licenses: licenses.map((entry) => ({
+      name: entry.name,
+      acquiredOn: entry.obtainedOn || undefined,
+    })),
+    pr: prData,
+    career: combinedCareerText ? { generatedCareer: combinedCareerText } : undefined,
+  };
+};
+
+const hasResumeDataContent = (data: ResumeData) => {
+  if (textHasValue(data.profile.name) || textHasValue(data.profile.address) || textHasValue(data.profile.email)) {
+    return true;
+  }
+
+  if (data.education.length > 0 || data.work.length > 0 || data.licenses.length > 0) {
+    return true;
+  }
+
+  if (data.pr && (textHasValue(data.pr.generated) || (data.pr.answers?.length ?? 0) > 0)) {
+    return true;
+  }
+
+  if (data.career && textHasValue(data.career.generatedCareer)) {
+    return true;
+  }
+
+  return false;
+};

@@ -6,6 +6,7 @@ export const runtime = "nodejs";
 
 const DEFAULT_TTL_SECONDS = 60 * 60 * 24 * 7;
 const MAX_TTL_SECONDS = DEFAULT_TTL_SECONDS;
+const templateIdSchema = z.enum(["standard", "jis", "company-simple"]);
 
 const profileSchema = z.object({
   name: z.string(),
@@ -72,9 +73,11 @@ const shareDataSchema = z.object({
     cv: cvStateSchema,
     cvText: z.string(),
   }),
+  templateId: templateIdSchema.optional(),
 });
 
 const shareRequestSchema = shareDataSchema.extend({
+  templateId: templateIdSchema,
   expireSeconds: z
     .number({ coerce: true })
     .int()
@@ -124,9 +127,9 @@ export async function POST(request: NextRequest) {
     const parsed = shareRequestSchema.parse(await request.json());
     const shareToken = uuidv4();
     const ttlSeconds = parsed.expireSeconds ?? DEFAULT_TTL_SECONDS;
-    const { resume, career } = parsed;
+    const { resume, career, templateId } = parsed;
 
-    await storeShareData(shareToken, { resume, career }, ttlSeconds);
+    await storeShareData(shareToken, { resume, career, templateId }, ttlSeconds);
 
     const origin = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
     const url = createShareUrl(origin, shareToken);

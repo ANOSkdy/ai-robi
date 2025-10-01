@@ -83,6 +83,7 @@ describe("POST /api/share", () => {
         },
         cvText: "職務経歴書本文",
       },
+      templateId: "standard",
     };
 
     const request = new Request("https://app.example.com/api/share", {
@@ -111,6 +112,7 @@ describe("POST /api/share", () => {
 
     const storedPayload = JSON.parse(parsed.value);
     expect(storedPayload.data.resume.profile.name).toBe("山田太郎");
+    expect(storedPayload.data.templateId).toBe("standard");
     expect(typeof storedPayload.exp).toBe("number");
   });
 });
