@@ -20,7 +20,7 @@ export function MainNavigation() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="主要ナビゲーション" className="flex flex-wrap gap-2 text-sm">
+    <nav role="navigation" aria-label="主要ナビゲーション" className="flex flex-wrap gap-2 text-sm">
       {NAV_ITEMS.map((item) => {
         const active = isActive(pathname, item.href);
         return (
