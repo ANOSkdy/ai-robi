@@ -1,5 +1,4 @@
-import { headers } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 
@@ -97,8 +96,7 @@ const getKvConfig = () => {
   return { url, token };
 };
 
-const createShareUrl = (token: string) => {
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? headers().get("origin") ?? "http://localhost:3000";
+const createShareUrl = (origin: string, token: string) => {
   return `${origin.replace(/\/$/, "")}/share/${token}`;
 };
 
@@ -121,7 +119,7 @@ const storeShareData = async (token: string, data: ShareData, ttlSeconds: number
   }
 };
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const parsed = shareRequestSchema.parse(await request.json());
     const shareToken = uuidv4();
@@ -130,7 +128,8 @@ export async function POST(request: Request) {
 
     await storeShareData(shareToken, { resume, career }, ttlSeconds);
 
-    const url = createShareUrl(shareToken);
+    const origin = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
+    const url = createShareUrl(origin, shareToken);
 
     return NextResponse.json({ url }, { status: 201 });
   } catch (error) {

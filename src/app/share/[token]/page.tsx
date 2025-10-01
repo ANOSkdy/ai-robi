@@ -14,12 +14,12 @@ const displayValue = (value?: string | null) => {
   return trimmed.length > 0 ? trimmed : "未入力";
 };
 
-const getBaseUrl = () => {
+const getBaseUrl = async () => {
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
   }
 
-  const headerList = headers();
+  const headerList = await headers();
   const protocol = headerList.get("x-forwarded-proto") ?? "http";
   const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
 
@@ -31,7 +31,7 @@ const getBaseUrl = () => {
 };
 
 const fetchShareData = async (token: string): Promise<ShareData | null> => {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const response = await fetch(`${baseUrl}/api/share/${token}`, {
     cache: "no-store",
     headers: {
