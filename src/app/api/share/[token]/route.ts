@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { shareDataSchema } from "../route";
@@ -53,25 +53,40 @@ const fetchShareData = async (token: string) => {
   }
 };
 
-export async function GET(_: Request, context: { params: { token: string } }) {
+export async function GET(
+  _: NextRequest,
+  context: { params: Promise<{ token: string }> },
+) {
+  let token: string | undefined;
   try {
-    const { token } = context.params;
-    if (!token) {
-      return NextResponse.json({ message: "Not found" }, { status: 404 });
-    }
+    ({ token } = await context.params);
+  } catch (error) {
+    return NextResponse.json({ message: "Token missing" }, { status: 400 });
+  }
 
+  if (!token) {
+    return NextResponse.json({ message: "Token missing" }, { status: 400 });
+  }
+
+  try {
     const kvData = await fetchShareData(token);
 
     if (!kvData) {
-      return NextResponse.json({ message: "Not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Link expired or not found" },
+        { status: 404 },
+      );
     }
 
     if (kvData.exp * 1000 <= Date.now()) {
-      return NextResponse.json({ message: "Not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Link expired or not found" },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json(kvData.data, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: "Not found" }, { status: 404 });
+    return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
