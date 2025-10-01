@@ -3,47 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { z } from "zod";
 import { FormSection } from "@/components/ui/FormSection";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
+import PhotoUploader from "@/components/PhotoUploader";
 import { useResumeStore, type Profile } from "@/store/resume";
 import { DraftRestoreBanner } from "@/components/DraftRestoreBanner";
 import { clearDraft, loadDraft, useAutosave } from "@/hooks/useAutosave";
-
-const profileSchema = z.object({
-  name: z.string().trim().min(1, "氏名は必須です。"),
-  nameKana: z
-    .string()
-    .trim()
-    .optional()
-    .or(z.literal("")),
-  birth: z
-    .string()
-    .trim()
-    .min(1, "生年月日を入力してください。")
-    .refine((value) => !Number.isNaN(Date.parse(value)), {
-      message: "YYYY-MM-DD形式で入力してください。",
-    }),
-  address: z.string().trim().min(1, "住所を入力してください。"),
-  phone: z
-    .string()
-    .trim()
-    .min(1, "電話番号を入力してください。")
-    .refine((value) => /[0-9]/.test(value), {
-      message: "数字を含めて入力してください。",
-    }),
-  email: z.string().trim().email("メールアドレスの形式で入力してください。"),
-  avatarUrl: z
-    .string()
-    .trim()
-    .optional()
-    .or(z.literal(""))
-    .refine((value) => !value || /^https?:\/\//.test(value), {
-      message: "有効なURLを入力してください。",
-    }),
-});
-
-type ProfileFormData = z.infer<typeof profileSchema>;
+import { profileSchema, type ProfileFormData } from "./schema";
 
 const STORAGE_KEY = "airobi:resume:profile:v1";
 
@@ -252,41 +218,34 @@ export default function ResumeProfilePage() {
                 />
                 {fieldErrors.email ? <p className="text-xs text-red-600">{fieldErrors.email}</p> : null}
               </div>
-              <div className="flex flex-col gap-2">
-                <label htmlFor="avatarUrl" className="text-sm font-medium text-slate-800">
-                  プロフィール画像 URL
-                </label>
-                <input
-                  id="avatarUrl"
-                  name="avatarUrl"
-                  type="url"
-                  placeholder="https://example.com/photo.jpg"
-                  value={formData.avatarUrl ?? ""}
-                  onChange={(event) => handleChange("avatarUrl", event.target.value)}
-                  className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 ${
-                    fieldErrors.avatarUrl ? "border-red-400" : "border-slate-200"
-                  }`}
-                  aria-invalid={fieldErrors.avatarUrl ? "true" : undefined}
-                />
-                {fieldErrors.avatarUrl ? <p className="text-xs text-red-600">{fieldErrors.avatarUrl}</p> : null}
-              </div>
             </div>
           </div>
-          <div className="flex flex-col gap-3">
-            <p className="text-sm font-medium text-slate-700">写真プレビュー（4:3）</p>
-            <div className="relative flex h-full min-h-[200px] w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50">
-              {avatarPreview ? (
-                <Image
-                  src={avatarPreview}
-                  alt="プロフィール画像プレビュー"
-                  width={400}
-                  height={300}
-                  className="h-full w-full rounded-lg object-cover"
-                  unoptimized
-                />
-              ) : (
-                <span className="text-xs text-slate-500">画像URLを入力するとプレビューが表示されます。</span>
-              )}
+          <div className="flex flex-col gap-4">
+            <PhotoUploader
+              className="space-y-3"
+              value={formData.avatarUrl ?? ""}
+              onChange={(url) => handleChange("avatarUrl", url)}
+              aspect={4 / 3}
+            />
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-medium text-slate-700">写真プレビュー（4:3）</p>
+              <div className="relative flex h-full min-h-[200px] w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50">
+                {avatarPreview ? (
+                  <Image
+                    src={avatarPreview}
+                    alt="プロフィール画像プレビュー"
+                    width={400}
+                    height={300}
+                    className="photo-4x3 h-full w-full object-cover"
+                    unoptimized
+                  />
+                ) : (
+                  <span className="text-xs text-slate-500">画像をアップロードするとプレビューが表示されます。</span>
+                )}
+              </div>
+              {fieldErrors.avatarUrl ? (
+                <p className="text-xs text-red-600">{fieldErrors.avatarUrl}</p>
+              ) : null}
             </div>
           </div>
         </div>

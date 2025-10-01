@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { ResumeData } from "../types";
 
 export default function CompanySimple({ data }: { data: ResumeData }) {
@@ -13,6 +15,18 @@ export default function CompanySimple({ data }: { data: ResumeData }) {
         <h1 className="text-2xl font-bold text-slate-900">{profile.name || "氏名未入力"}</h1>
         <p className="text-sm text-slate-600">{profile.email} ／ {profile.phone}</p>
         {profile.address ? <p className="text-sm text-slate-600">{profile.address}</p> : null}
+        {profile.avatarUrl ? (
+          <div>
+            <Image
+              src={profile.avatarUrl}
+              alt="プロフィール写真"
+              width={160}
+              height={120}
+              className="photo-4x3 mt-2 h-32 w-40 rounded object-cover"
+              unoptimized
+            />
+          </div>
+        ) : null}
       </header>
 
       {highlightedLicenses.length > 0 ? (
