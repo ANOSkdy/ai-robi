@@ -25,7 +25,7 @@ export const resumeTemplates: TemplateSpec[] = [
 const isTemplateId = (value: unknown): value is TemplateId =>
   value === "standard" || value === "jis" || value === "company-simple";
 
-export function getResumeTemplate(id: TemplateId | string | null | undefined): TemplateSpec {
+export function getResumeTemplate(id: unknown): TemplateSpec {
   const fallbackId: TemplateId = isTemplateId(id) ? id : "standard";
   const found = resumeTemplates.find((template) => template.id === fallbackId);
   return found ?? resumeTemplates[0];

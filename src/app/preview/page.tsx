@@ -24,18 +24,20 @@ import { toResumeData } from "@/templates/toResumeData";
 
 type TemplateErrorBoundaryProps = {
   children: ReactNode;
+  debug?: boolean;
   onRetry: () => void;
 };
 
 type TemplateErrorBoundaryState = {
   hasError: boolean;
+  error: Error | null;
 };
 
 class TemplateErrorBoundary extends Component<TemplateErrorBoundaryProps, TemplateErrorBoundaryState> {
-  state: TemplateErrorBoundaryState = { hasError: false };
+  state: TemplateErrorBoundaryState = { hasError: false, error: null };
 
-  static getDerivedStateFromError(): TemplateErrorBoundaryState {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): TemplateErrorBoundaryState {
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -43,7 +45,7 @@ class TemplateErrorBoundary extends Component<TemplateErrorBoundaryProps, Templa
   }
 
   private handleRetry = () => {
-    this.setState({ hasError: false });
+    this.setState({ hasError: false, error: null });
     this.props.onRetry();
   };
 
@@ -55,6 +57,7 @@ class TemplateErrorBoundary extends Component<TemplateErrorBoundaryProps, Templa
 
   render() {
     if (this.state.hasError) {
+      const details = this.state.error ? getErrorDetails(this.state.error) : null;
       return (
         <div
           className="flex min-h-[400px] flex-col items-center justify-center gap-4 rounded border border-red-200 bg-white p-6 text-center text-sm text-red-700"
@@ -72,6 +75,15 @@ class TemplateErrorBoundary extends Component<TemplateErrorBoundaryProps, Templa
               再読み込み
             </button>
           </div>
+          {this.props.debug && details ? (
+            <div className="w-full max-w-[520px] rounded border border-slate-200 bg-white p-3 text-left text-xs text-slate-600">
+              <p className="font-semibold text-slate-700">Debug information</p>
+              <pre className="mt-2 whitespace-pre-wrap text-[11px] leading-relaxed text-slate-600">
+                {details.message}
+                {details.stack ? `\n${details.stack}` : ""}
+              </pre>
+            </div>
+          ) : null}
         </div>
       );
     }
@@ -99,6 +111,7 @@ export default function PreviewPage() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [renderAttempt, setRenderAttempt] = useState(0);
+  const [isDebug, setIsDebug] = useState(false);
   const templateId = useTemplateStore((state) => state.template);
   const setTemplate = useTemplateStore((state) => state.setTemplate);
 
@@ -125,6 +138,14 @@ export default function PreviewPage() {
   useEffect(() => {
     setRenderAttempt(0);
   }, [templateId]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    setIsDebug(params.get("debug") === "1");
+  }, []);
 
   const documentTitle = useMemo(() => {
     const base = profile?.name ? `${profile.name}-resume` : "resume-preview";
@@ -245,9 +266,11 @@ export default function PreviewPage() {
     showToast(copied ? "共有URLをコピーしました" : "共有URLをコピーできませんでした");
   }, [copyToClipboard, shareUrl, showToast]);
 
-  const resumeData = toResumeData();
-
-  const hasAnyContent = useMemo(() => hasResumeDataContent(resumeData), [resumeData]);
+  const resumeData = sanitizeResumeData(toResumeData());
+  const prAnswerCount = Array.isArray(prAnswers)
+    ? prAnswers.filter((answer) => typeof answer === "string" && answer.trim().length > 0).length
+    : 0;
+  const hasAnyContent = hasResumeDataContent(resumeData) || prAnswerCount > 0;
 
   const template = getResumeTemplate(templateId);
 
@@ -345,7 +368,7 @@ export default function PreviewPage() {
           className="print-container mx-auto w-[794px] bg-white p-10 text-black shadow print:w-full print:bg-white print:p-0 print:text-black"
         >
           {hasAnyContent ? (
-            <TemplateErrorBoundary key={`${template.id}-${renderAttempt}`} onRetry={handleRetryPreview}>
+            <TemplateErrorBoundary key={`${template.id}-${renderAttempt}`} debug={isDebug} onRetry={handleRetryPreview}>
               {template.component(resumeData)}
             </TemplateErrorBoundary>
           ) : (
@@ -394,3 +417,124 @@ export const hasResumeDataContent = (data: ResumeData) => {
 
   return false;
 };
+
+type SanitizableResumeData = Partial<ResumeData> & {
+  profile?: Partial<ResumeData["profile"]>;
+  education?: Array<Partial<ResumeData["education"][number]>>;
+  work?: Array<Partial<ResumeData["work"][number]>>;
+  licenses?: Array<Partial<ResumeData["licenses"][number]>>;
+  pr?: Partial<NonNullable<ResumeData["pr"]>>;
+  career?: Partial<NonNullable<ResumeData["career"]>>;
+};
+
+function sanitizeResumeData(data: SanitizableResumeData): ResumeData {
+  const toSafeString = (value: unknown): string => (typeof value === "string" ? value : "");
+  const toOptionalString = (value: unknown): string | undefined =>
+    typeof value === "string" && value.length > 0 ? value : undefined;
+
+  const sanitizeEducation = (
+    entries: Array<Partial<ResumeData["education"][number]>> | undefined,
+  ): ResumeData["education"] =>
+    Array.isArray(entries)
+      ? entries.map((entry) => ({
+          start: toSafeString(entry?.start),
+          end: toOptionalString(entry?.end),
+          title: toSafeString(entry?.title),
+          detail: toOptionalString(entry?.detail),
+          status: toOptionalString(entry?.status),
+        }))
+      : [];
+
+  const sanitizeWork = (
+    entries: Array<Partial<ResumeData["work"][number]>> | undefined,
+  ): ResumeData["work"] =>
+    Array.isArray(entries)
+      ? entries.map((entry) => ({
+          start: toSafeString(entry?.start),
+          end: toOptionalString(entry?.end),
+          title: toSafeString(entry?.title),
+          detail: toOptionalString(entry?.detail),
+          status: toOptionalString(entry?.status),
+        }))
+      : [];
+
+  const sanitizeLicenses = (
+    entries: Array<Partial<ResumeData["licenses"][number]>> | undefined,
+  ): ResumeData["licenses"] =>
+    Array.isArray(entries)
+      ? entries.map((entry) => ({
+          name: toSafeString(entry?.name),
+          acquiredOn: toOptionalString(entry?.acquiredOn),
+        }))
+      : [];
+
+  const sanitizePr = (
+    value: Partial<NonNullable<ResumeData["pr"]>> | undefined,
+  ): ResumeData["pr"] | undefined => {
+    if (!value) {
+      return undefined;
+    }
+    const generated = value.generated ?? "";
+    const answers = Array.isArray(value.answers)
+      ? value.answers.map((answer) => toSafeString(answer)).filter((answer) => answer.length > 0)
+      : [];
+
+    if (generated.length === 0 && answers.length === 0) {
+      return undefined;
+    }
+
+    return {
+      generated,
+      answers,
+    };
+  };
+
+  const sanitizeCareer = (
+    value: Partial<NonNullable<ResumeData["career"]>> | undefined,
+  ): ResumeData["career"] | undefined => {
+    if (!value) {
+      return undefined;
+    }
+    const generatedCareer = value.generatedCareer ?? "";
+    if (generatedCareer.length === 0) {
+      return undefined;
+    }
+    return { generatedCareer };
+  };
+
+  return {
+    profile: {
+      name: toSafeString(data.profile?.name),
+      nameKana: toOptionalString(data.profile?.nameKana),
+      birth: toOptionalString(data.profile?.birth),
+      address: toSafeString(data.profile?.address),
+      phone: toSafeString(data.profile?.phone),
+      email: toSafeString(data.profile?.email),
+      avatarUrl: toOptionalString(data.profile?.avatarUrl),
+    },
+    education: sanitizeEducation(data.education),
+    work: sanitizeWork(data.work),
+    licenses: sanitizeLicenses(data.licenses),
+    pr: sanitizePr(data.pr),
+    career: sanitizeCareer(data.career),
+  };
+}
+
+function getErrorDetails(error: unknown): { message: string; stack?: string } {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      stack: error.stack ?? undefined,
+    };
+  }
+
+  if (typeof error === "string") {
+    return { message: error };
+  }
+
+  try {
+    return { message: JSON.stringify(error) };
+  } catch {
+    return { message: String(error) };
+  }
+}
