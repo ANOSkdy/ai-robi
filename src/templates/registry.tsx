@@ -1,9 +1,10 @@
 "use client";
 
-import { TemplateSpec, TemplateId, ResumeData } from "./types";
-import Standard from "./resume/Standard";
-import JIS from "./resume/JIS";
-import CompanySimple from "./resume/CompanySimple";
+import dynamic from "next/dynamic";
+import { createElement } from "react";
+import type { ComponentType } from "react";
+
+import { TemplateSpec, TemplateId, ResumeData, TemplateRenderer } from "./types";
 
 export const TEMPLATE_LABELS: Record<TemplateId, string> = {
   standard: "標準",
@@ -11,14 +12,58 @@ export const TEMPLATE_LABELS: Record<TemplateId, string> = {
   "company-simple": "シンプル（会社向け）",
 };
 
+type TemplateComponentProps = { data: ResumeData };
+
+const Loading = () => (
+  <div className="section" aria-busy="true">
+    プレビューを読み込み中…
+  </div>
+);
+
+Loading.displayName = "TemplatePreviewLoading";
+
+const DynStandard: ComponentType<TemplateComponentProps> = dynamic<TemplateComponentProps>(
+  () => import("./resume/Standard"),
+  { ssr: false, loading: Loading },
+);
+
+const DynJis: ComponentType<TemplateComponentProps> = dynamic<TemplateComponentProps>(
+  () => import("./resume/JIS"),
+  { ssr: false, loading: Loading },
+);
+
+const DynCompanySimple: ComponentType<TemplateComponentProps> = dynamic<TemplateComponentProps>(
+  () => import("./resume/CompanySimple"),
+  { ssr: false, loading: Loading },
+);
+
+const toRenderer = (Component: ComponentType<TemplateComponentProps>): TemplateRenderer => {
+  function RenderWithData(data: ResumeData) {
+    return createElement(Component, { data });
+  }
+
+  return RenderWithData;
+};
+
+const templateComponents: Record<TemplateId, ComponentType<TemplateComponentProps>> = {
+  standard: DynStandard,
+  jis: DynJis,
+  "company-simple": DynCompanySimple,
+};
+
 export const resumeTemplates: TemplateSpec[] = [
-  { id: "standard", label: TEMPLATE_LABELS.standard, kind: "both", component: (d: ResumeData) => <Standard data={d} /> },
-  { id: "jis", label: TEMPLATE_LABELS.jis, kind: "resume", component: (d: ResumeData) => <JIS data={d} /> },
+  {
+    id: "standard",
+    label: TEMPLATE_LABELS.standard,
+    kind: "both",
+    component: toRenderer(templateComponents.standard),
+  },
+  { id: "jis", label: TEMPLATE_LABELS.jis, kind: "resume", component: toRenderer(templateComponents.jis) },
   {
     id: "company-simple",
     label: TEMPLATE_LABELS["company-simple"],
     kind: "both",
-    component: (d: ResumeData) => <CompanySimple data={d} />,
+    component: toRenderer(templateComponents["company-simple"]),
   },
 ];
 
@@ -28,5 +73,10 @@ const isTemplateId = (value: unknown): value is TemplateId =>
 export function getResumeTemplate(id: unknown): TemplateSpec {
   const fallbackId: TemplateId = isTemplateId(id) ? id : "standard";
   const found = resumeTemplates.find((template) => template.id === fallbackId);
-  return found ?? resumeTemplates[0];
+  return found ?? {
+    id: "standard",
+    label: TEMPLATE_LABELS.standard,
+    kind: "both",
+    component: toRenderer(templateComponents.standard),
+  };
 }

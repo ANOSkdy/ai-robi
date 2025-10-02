@@ -266,13 +266,27 @@ export default function PreviewPage() {
     showToast(copied ? "共有URLをコピーしました" : "共有URLをコピーできませんでした");
   }, [copyToClipboard, shareUrl, showToast]);
 
-  const resumeData = sanitizeResumeData(toResumeData());
+  const resumeData = (() => {
+    try {
+      return sanitizeResumeData(toResumeData());
+    } catch (error) {
+      console.error(error);
+      return sanitizeResumeData({});
+    }
+  })();
   const prAnswerCount = Array.isArray(prAnswers)
     ? prAnswers.filter((answer) => typeof answer === "string" && answer.trim().length > 0).length
     : 0;
   const hasAnyContent = hasResumeDataContent(resumeData) || prAnswerCount > 0;
 
-  const template = getResumeTemplate(templateId);
+  const template = useMemo(() => {
+    try {
+      return getResumeTemplate(templateId);
+    } catch (error) {
+      console.error(error);
+      return resumeTemplates[0];
+    }
+  }, [templateId]);
 
   const handleRetryPreview = useCallback(() => {
     setRenderAttempt((current) => current + 1);
