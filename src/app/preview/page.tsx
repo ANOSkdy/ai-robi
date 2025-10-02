@@ -1,6 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Component,
+  type ErrorInfo,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 import { useReactToPrint } from "react-to-print";
 
@@ -12,6 +21,64 @@ import { formatYmd } from "@/lib/date/formatYmd";
 import { getResumeTemplate, resumeTemplates } from "@/templates/registry";
 import type { ResumeData, TemplateId } from "@/templates/types";
 import { toResumeData } from "@/templates/toResumeData";
+
+type TemplateErrorBoundaryProps = {
+  children: ReactNode;
+  onRetry: () => void;
+};
+
+type TemplateErrorBoundaryState = {
+  hasError: boolean;
+};
+
+class TemplateErrorBoundary extends Component<TemplateErrorBoundaryProps, TemplateErrorBoundaryState> {
+  state: TemplateErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError(): TemplateErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error(error, errorInfo);
+  }
+
+  private handleRetry = () => {
+    this.setState({ hasError: false });
+    this.props.onRetry();
+  };
+
+  private handleReload = () => {
+    if (typeof window !== "undefined") {
+      window.location.reload();
+    }
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          className="flex min-h-[400px] flex-col items-center justify-center gap-4 rounded border border-red-200 bg-white p-6 text-center text-sm text-red-700"
+          role="alert"
+        >
+          <div className="space-y-2">
+            <p className="font-semibold">プレビューを表示できませんでした。</p>
+            <p className="text-xs text-red-600">入力内容を確認し、再試行してください。</p>
+          </div>
+          <div className="row flex flex-wrap justify-center gap-2">
+            <button type="button" className="btn outline" onClick={this.handleRetry} aria-label="プレビューを再試行する">
+              もう一度試す
+            </button>
+            <button type="button" className="btn" onClick={this.handleReload} aria-label="ページを再読み込みする">
+              再読み込み
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 export default function PreviewPage() {
   const router = useRouter();
@@ -31,6 +98,7 @@ export default function PreviewPage() {
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [renderAttempt, setRenderAttempt] = useState(0);
   const templateId = useTemplateStore((state) => state.template);
   const setTemplate = useTemplateStore((state) => state.setTemplate);
 
@@ -54,6 +122,10 @@ export default function PreviewPage() {
     };
   }, []);
 
+  useEffect(() => {
+    setRenderAttempt(0);
+  }, [templateId]);
+
   const documentTitle = useMemo(() => {
     const base = profile?.name ? `${profile.name}-resume` : "resume-preview";
     return `${base}-${formatYmd(new Date())}`;
@@ -65,10 +137,16 @@ export default function PreviewPage() {
   });
 
   const handlePrint = useCallback(() => {
+    if (!printContentRef.current) {
+      return;
+    }
     triggerPrint?.();
   }, [triggerPrint]);
 
   const handlePdfDownload = useCallback(() => {
+    if (!printContentRef.current) {
+      return;
+    }
     triggerPrint?.();
   }, [triggerPrint]);
 
@@ -173,6 +251,10 @@ export default function PreviewPage() {
 
   const template = getResumeTemplate(templateId);
 
+  const handleRetryPreview = useCallback(() => {
+    setRenderAttempt((current) => current + 1);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
       <div className="container mx-auto w-full max-w-[820px] px-4 print:w-auto print:max-w-none print:px-0">
@@ -263,7 +345,9 @@ export default function PreviewPage() {
           className="print-container mx-auto w-[794px] bg-white p-10 text-black shadow print:w-full print:bg-white print:p-0 print:text-black"
         >
           {hasAnyContent ? (
-            template.component(resumeData)
+            <TemplateErrorBoundary key={`${template.id}-${renderAttempt}`} onRetry={handleRetryPreview}>
+              {template.component(resumeData)}
+            </TemplateErrorBoundary>
           ) : (
             <div className="flex min-h-[400px] items-center justify-center text-sm text-slate-500">
               履歴書・職務経歴書の内容がまだ入力されていません。

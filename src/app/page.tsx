@@ -22,7 +22,7 @@ export default function Page() {
           <Link className="btn primary" href="/resume/profile">
             {t("home.cta.resume")}
           </Link>
-          <Link className="btn outline" href="/cv">
+          <Link className="btn outline" href="/preview">
             {t("home.cta.career")}
           </Link>
         </div>

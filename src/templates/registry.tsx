@@ -22,7 +22,11 @@ export const resumeTemplates: TemplateSpec[] = [
   },
 ];
 
-export function getResumeTemplate(id: TemplateId): TemplateSpec {
-  const found = resumeTemplates.find((template) => template.id === id);
+const isTemplateId = (value: unknown): value is TemplateId =>
+  value === "standard" || value === "jis" || value === "company-simple";
+
+export function getResumeTemplate(id: TemplateId | string | null | undefined): TemplateSpec {
+  const fallbackId: TemplateId = isTemplateId(id) ? id : "standard";
+  const found = resumeTemplates.find((template) => template.id === fallbackId);
   return found ?? resumeTemplates[0];
 }

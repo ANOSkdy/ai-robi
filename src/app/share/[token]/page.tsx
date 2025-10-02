@@ -1,4 +1,6 @@
-import { headers } from "next/headers";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 
 import PrimaryButton from "@/components/ui/PrimaryButton";
 import type { ShareData } from "@/app/api/share/route";
@@ -13,29 +15,13 @@ const textHasValue = (value?: string | null) => {
   return value.trim().length > 0;
 };
 
-const getBaseUrl = async () => {
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
-  }
-
-  const headerList = await headers();
-  const protocol = headerList.get("x-forwarded-proto") ?? "http";
-  const host = headerList.get("x-forwarded-host") ?? headerList.get("host");
-
-  if (host) {
-    return `${protocol}://${host}`.replace(/\/$/, "");
-  }
-
-  return "http://localhost:3000";
-};
-
-const fetchShareData = async (token: string): Promise<ShareData | null> => {
-  const baseUrl = await getBaseUrl();
-  const response = await fetch(`${baseUrl}/api/share/${token}`, {
+const fetchShareData = async (token: string, signal: AbortSignal): Promise<ShareData | null> => {
+  const response = await fetch(`/api/share/${token}`, {
     cache: "no-store",
     headers: {
       Accept: "application/json",
     },
+    signal,
   });
 
   if (!response.ok) {
@@ -53,8 +39,6 @@ const fetchShareData = async (token: string): Promise<ShareData | null> => {
 };
 
 function PrintButton() {
-  "use client";
-
   const handlePrint = () => {
     window.print();
   };
@@ -134,10 +118,67 @@ const buildResumeDataFromShare = (data: ShareData): ResumeData => {
   };
 };
 
-export default async function SharePreviewPage({ params }: { params: { token: string } }) {
-  const data = await fetchShareData(params.token);
+type ShareState =
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "loaded"; data: ShareData };
 
-  if (!data) {
+export default function SharePreviewPage({ params }: { params: { token: string } }) {
+  const [state, setState] = useState<ShareState>({ status: "loading" });
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    setState({ status: "loading" });
+
+    fetchShareData(params.token, controller.signal)
+      .then((result) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        if (!result) {
+          setState({ status: "error" });
+          return;
+        }
+
+        setState({ status: "loaded", data: result });
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        console.error(error);
+        setState({ status: "error" });
+      });
+
+    return () => {
+      controller.abort();
+    };
+  }, [params.token]);
+
+  const shareData = state.status === "loaded" ? state.data : null;
+  const resumeData = useMemo(() => (shareData ? buildResumeDataFromShare(shareData) : null), [shareData]);
+  const templateId: TemplateId = shareData?.templateId ?? "standard";
+
+  if (state.status === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 text-center">
+        <div
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+          className="space-y-4 rounded-lg bg-white p-8 shadow"
+        >
+          <h1 className="text-2xl font-semibold text-slate-900">共有データを読み込み中です</h1>
+          <p className="text-sm text-slate-600">少々お待ちください。</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (state.status === "error" || !shareData || !resumeData) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100 px-4 text-center">
         <div
@@ -151,9 +192,6 @@ export default async function SharePreviewPage({ params }: { params: { token: st
       </div>
     );
   }
-
-  const resumeData = buildResumeDataFromShare(data);
-  const templateId: TemplateId = data.templateId ?? "standard";
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
