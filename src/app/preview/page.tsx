@@ -177,14 +177,14 @@ export default function PreviewPage() {
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
       <div className="container mx-auto w-full max-w-[820px] px-4 print:w-auto print:max-w-none print:px-0">
         <div className="card mb-4 flex flex-col gap-4 print:hidden" data-hide-on-print>
-          <div className="space-b row flex flex-wrap items-center gap-3">
-            <div className="row flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="row flex flex-wrap items-center gap-2">
               <label htmlFor="template-select" className="text-sm font-medium text-slate-700">
                 {t("preview.template")}
               </label>
               <select
                 id="template-select"
-                className="border p-2 text-sm text-slate-800 rounded border-slate-300 bg-white px-3 py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                className="border rounded px-3 py-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
                 value={templateId}
                 onChange={(event) => setTemplate(event.target.value as TemplateId)}
               >
@@ -197,20 +197,32 @@ export default function PreviewPage() {
             </div>
             <div className="row flex flex-wrap gap-2">
               <PrimaryButton
-                className="btn primary"
+                className="btn primary !border-slate-900 !bg-slate-900 !text-white hover:!bg-slate-800"
                 onClick={handleShare}
                 loading={isSharing}
                 aria-label="共有リンクを発行する"
               >
                 {t("share.create")}
               </PrimaryButton>
-              <PrimaryButton className="btn" onClick={handlePrint} aria-label="印刷プレビューを開く">
+              <PrimaryButton
+                className="btn !bg-white !text-slate-900 hover:!bg-slate-100"
+                onClick={handlePrint}
+                aria-label="印刷プレビューを開く"
+              >
                 {t("preview.print")}
               </PrimaryButton>
-              <PrimaryButton className="btn" onClick={handlePdfDownload} aria-label="PDFとして保存する">
+              <PrimaryButton
+                className="btn !bg-white !text-slate-900 hover:!bg-slate-100"
+                onClick={handlePdfDownload}
+                aria-label="PDFとして保存する"
+              >
                 PDFダウンロード
               </PrimaryButton>
-              <PrimaryButton className="btn" onClick={handleBack} aria-label="入力画面に戻る">
+              <PrimaryButton
+                className="btn !bg-white !text-slate-900 hover:!bg-slate-100"
+                onClick={handleBack}
+                aria-label="入力画面に戻る"
+              >
                 戻る
               </PrimaryButton>
             </div>
