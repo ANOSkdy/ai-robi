@@ -20,5 +20,7 @@
   "profile.address": "Address",
   "profile.phone": "Phone",
   "profile.email": "Email",
-  "common.save": "Save"
+  "common.save": "Save",
+  "home.cta.resume": "Create Resume",
+  "home.cta.career": "Create Career Doc"
 }

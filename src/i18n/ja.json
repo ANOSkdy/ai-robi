@@ -20,5 +20,7 @@
   "profile.address": "住所",
   "profile.phone": "電話番号",
   "profile.email": "メール",
-  "common.save": "保存"
+  "common.save": "保存",
+  "home.cta.resume": "履歴書を作成",
+  "home.cta.career": "職務経歴書を作成"
 }
