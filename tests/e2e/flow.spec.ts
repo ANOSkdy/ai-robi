@@ -12,10 +12,15 @@ test.describe("主要フロー: 入力→AI生成→プレビュー/印刷→共
     await mockAIAndShare(page);
   });
 
-  test("トップが表示され、ナビがある", async ({ page }) => {
+  test("トップが表示され、主要CTAが2件ある", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /AI-ROBI/ })).toBeVisible();
-    await expect(page.getByRole("link", { name: /履歴書|Resume/i })).toBeVisible();
+    const hero = page.locator("section.hero");
+    await expect(hero).toBeVisible();
+    const ctas = hero.getByRole("link");
+    await expect(ctas).toHaveCount(2);
+    await expect(ctas.filter({ hasText: /履歴書を作成|Create Resume/ })).toHaveCount(1);
+    await expect(ctas.filter({ hasText: /職務経歴書を作成|Create Career Doc/ })).toHaveCount(1);
   });
 
   test("プロフィール入力→自己PR AI生成→プレビューで反映", async ({ page }) => {
