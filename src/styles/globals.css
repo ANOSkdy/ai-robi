@@ -7,7 +7,15 @@
   --layout-padding: 1rem;
   --text-muted: #6b7280;
   --border-color: #e5e7eb;
-  --background-color: #ffffff;
+  --background-color: #f9f9f9;
+  --ink-color: #111827;
+  --primary-color: #4a90e2;
+  --primary-ink-color: #0b4e9b;
+  --secondary-color: #50e3c2;
+  --accent-color-1: #ffd166;
+  --accent-color-2: #f25f5c;
+  --accent-color-3: #9d59ec;
+  --shadow-soft: 0 6px 24px rgba(17, 24, 39, 0.08), 0 1px 0 rgba(0, 0, 0, 0.04);
 }
 
 html,
@@ -20,7 +28,7 @@ body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Helvetica Neue", Arial,
     "Apple Color Emoji", "Segoe UI Emoji";
   background: var(--background-color);
-  color: #111827;
+  color: var(--ink-color);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -90,9 +98,19 @@ main {
 }
 
 .btn.primary {
-  background: #111827;
+  background: var(--primary-color);
   color: #ffffff;
-  border-color: #111827;
+  border-color: var(--primary-color);
+}
+
+.btn.primary:hover {
+  filter: brightness(0.96);
+}
+
+.btn.accent {
+  background: var(--accent-color-3);
+  border-color: var(--accent-color-3);
+  color: #ffffff;
 }
 
 .btn.ghost {
@@ -140,11 +158,13 @@ main {
 }
 
 .hero {
+  position: relative;
   border: 1px solid var(--border-color);
   border-radius: 1rem;
-  padding: 1.25rem;
+  padding: 1.5rem;
   background: linear-gradient(180deg, #ffffff, #fafafa);
-  box-shadow: 0 2px 20px rgba(17, 24, 39, 0.04);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
 }
 
 .row {
@@ -159,6 +179,91 @@ main {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #0f172a;
+  background: #e9f2fe;
+  border: 1px solid #d7e7fd;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.section {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-soft);
+}
+
+.accent-bar {
+  height: 4px;
+  width: 64px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.ink-muted {
+  color: #374151;
+}
+
+.dots-bg {
+  background-image: radial-gradient(rgba(17, 24, 39, 0.06) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
+
+.wave-bg {
+  position: absolute;
+  inset: auto -30% -20% -30%;
+  height: 140px;
+  background:
+    radial-gradient(60% 100% at 50% 0%, rgba(74, 144, 226, 0.25), transparent 70%),
+    radial-gradient(60% 100% at 50% 0%, rgba(80, 227, 194, 0.25), transparent 70%);
+  filter: blur(30px);
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(4px);
+  animation: fade-up 0.4s ease forwards;
+}
+
+@keyframes fade-up {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media print {
+  .fade-in,
+  .dots-bg,
+  .wave-bg,
+  .section,
+  .hero {
+    animation: none !important;
+    box-shadow: none !important;
+  }
+
+  .dots-bg,
+  .wave-bg {
+    display: none !important;
+  }
 }
 
 .mt-1 {

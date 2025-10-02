@@ -185,6 +185,7 @@ export default function PreviewPage() {
               <select
                 id="template-select"
                 className="border rounded px-3 py-2 text-sm text-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500"
+                style={{ background: "#ffffff" }}
                 value={templateId}
                 onChange={(event) => setTemplate(event.target.value as TemplateId)}
               >
@@ -197,7 +198,7 @@ export default function PreviewPage() {
             </div>
             <div className="row flex flex-wrap gap-2">
               <PrimaryButton
-                className="btn primary !border-slate-900 !bg-slate-900 !text-white hover:!bg-slate-800"
+                className="btn primary !border-[var(--primary-color)] !bg-[var(--primary-color)] !text-white hover:!bg-[var(--primary-ink-color)]"
                 onClick={handleShare}
                 loading={isSharing}
                 aria-label="共有リンクを発行する"
@@ -205,21 +206,21 @@ export default function PreviewPage() {
                 {t("share.create")}
               </PrimaryButton>
               <PrimaryButton
-                className="btn !bg-white !text-slate-900 hover:!bg-slate-100"
+                className="btn primary !border-[var(--primary-color)] !bg-[var(--primary-color)] !text-white hover:!bg-[var(--primary-ink-color)]"
                 onClick={handlePrint}
                 aria-label="印刷プレビューを開く"
               >
                 {t("preview.print")}
               </PrimaryButton>
               <PrimaryButton
-                className="btn !bg-white !text-slate-900 hover:!bg-slate-100"
+                className="btn accent !border-[var(--accent-color-3)] !bg-[var(--accent-color-3)] !text-white hover:!bg-[#7d3fcc]"
                 onClick={handlePdfDownload}
                 aria-label="PDFとして保存する"
               >
                 PDFダウンロード
               </PrimaryButton>
               <PrimaryButton
-                className="btn !bg-white !text-slate-900 hover:!bg-slate-100"
+                className="btn outline !bg-white !text-[var(--ink-color)] hover:!bg-slate-100"
                 onClick={handleBack}
                 aria-label="入力画面に戻る"
               >
