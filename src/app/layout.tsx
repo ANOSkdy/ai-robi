@@ -4,8 +4,9 @@ import "@/styles/print.css";
 import "@/styles/a11y.css";
 import Link from "next/link";
 import React from "react";
+
 import LangSwitcher from "@/components/LangSwitcher";
-import { I18nProvider } from "@/i18n/i18n";
+import ClientProviders from "./_client-providers";
 import { MainNavigation } from "@/components/ui/MainNavigation";
 
 export const runtime = "nodejs";
@@ -14,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja">
       <body className="bg-white text-slate-900">
-        <I18nProvider>
+        <ClientProviders>
           <a
             href="#main"
             className="sr-only focus:absolute focus:left-2 focus:top-2 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-slate-900"
@@ -43,7 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <footer className="sr-only" role="contentinfo">
             © AI-ROBI
           </footer>
-        </I18nProvider>
+        </ClientProviders>
       </body>
     </html>
   );

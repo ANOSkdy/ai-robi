@@ -40,6 +40,9 @@ const fetchShareData = async (token: string, signal: AbortSignal): Promise<Share
 
 function PrintButton() {
   const handlePrint = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
     window.print();
   };
 
