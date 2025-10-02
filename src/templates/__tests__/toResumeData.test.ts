@@ -3,6 +3,8 @@ import { describe, expect, beforeEach, it } from "vitest";
 import { useResumeStore } from "../../store/resume";
 import { toResumeData } from "../toResumeData";
 
+type ResumeState = ReturnType<typeof useResumeStore.getState>;
+
 describe("toResumeData", () => {
   beforeEach(() => {
     useResumeStore.getState().resetAll();
@@ -118,5 +120,66 @@ describe("toResumeData", () => {
     expect(result.career).toEqual({
       generatedCareer: expectedCareerLines.join("\n\n"),
     });
+  });
+
+  it("sanitizes missing or malformed store data into safe defaults", () => {
+    useResumeStore.setState({
+      profile: {
+        name: (undefined as unknown as string),
+        birth: (undefined as unknown as string),
+        address: (undefined as unknown as string),
+        phone: (undefined as unknown as string),
+        email: (undefined as unknown as string),
+        avatarUrl: undefined,
+      } as unknown as ResumeState["profile"],
+      education: (null as unknown as ResumeState["education"]),
+      employment: (undefined as unknown as ResumeState["employment"]),
+      licenses: [
+        {
+          name: "  ",
+          obtainedOn: "",
+        },
+      ] as unknown as ResumeState["licenses"],
+      prText: (undefined as unknown as string),
+      prAnswers: (null as unknown as ResumeState["prAnswers"]),
+      cvText: (undefined as unknown as string),
+      cv: {
+        jobProfile: {
+          name: undefined,
+          title: undefined,
+          summary: undefined,
+        },
+        experiences: [
+          {
+            period: " ",
+            company: " ",
+            role: " ",
+            achievements: [(undefined as unknown as string), " "],
+          },
+        ],
+      } as unknown as ResumeState["cv"],
+    } as Partial<ResumeState>);
+
+    const result = toResumeData();
+
+    expect(result.profile).toEqual({
+      name: "",
+      nameKana: undefined,
+      birth: undefined,
+      address: "",
+      phone: "",
+      email: "",
+      avatarUrl: undefined,
+    });
+    expect(result.education).toEqual([]);
+    expect(result.work).toEqual([]);
+    expect(result.licenses).toEqual([
+      {
+        name: "",
+        acquiredOn: undefined,
+      },
+    ]);
+    expect(result.pr).toBeUndefined();
+    expect(result.career).toBeUndefined();
   });
 });
