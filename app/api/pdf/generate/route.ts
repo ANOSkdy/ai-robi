@@ -4,15 +4,27 @@ import fs from 'node:fs';
 import path from 'node:path';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
-// @ts-ignore
+// @ts-expect-error -- package lacks type definitions
 import ImageModule from 'docxtemplater-image-module-free';
+
+type TemplateData = {
+  [key: string]: unknown;
+  date_created?: string;
+  birth_year?: string;
+  birth_month?: string;
+  birth_day?: string;
+  age?: string;
+  licenses?: Array<string | { title?: string }>;
+  licenses_text?: string;
+  photo?: string;
+};
 
 type Req = {
   template: 'resume' | 'cv';
   // 下記 data はテンプレのキーに合わせて渡す:
   // resume: { date_created, name_furigana, name, birth_year, birth_month, birth_day, age, address_*, phone, email, contact_*, generated_pr, special_requests, photoBase64? }
   // cv    : { date_created, name, work_summary, work_details, skills, self_pr_cv }
-  data: Record<string, any>;
+  data: TemplateData;
   photoBase64?: string;
 };
 
@@ -21,7 +33,7 @@ function ymdJST(): string {
   const y = jst.getUTCFullYear();
   const m = String(jst.getUTCMonth() + 1).padStart(2, '0');
   const d = String(jst.getUTCDate()).padStart(2, '0');
-  return ${y}//;
+  return `${y}-${m}-${d}`;
 }
 
 export async function POST(req: Request) {
@@ -44,9 +56,9 @@ export async function POST(req: Request) {
   // 渡されれば自動で付与・結合します（未使用なら無視されます）
   if (Array.isArray(data.licenses)) {
     const lines = data.licenses
-      .map((x: any) => (typeof x === 'string' ? x : x?.title || ''))
-      .filter(Boolean)
-      .map(s => s.trim().endsWith('取得') ? s.trim() : (s.trim() + ' 取得'));
+      .map(item => (typeof item === 'string' ? item : item?.title ?? ''))
+      .filter((value): value is string => Boolean(value))
+      .map(s => (s.trim().endsWith('取得') ? s.trim() : `${s.trim()} 取得`));
     data.licenses_text = lines.join('\n');
   }
 
@@ -57,7 +69,7 @@ export async function POST(req: Request) {
   data.photo = photoTag;       // {%photo} 用
   if (!photoTag) data.photo = ''; // 未アップ時は空 → プレースホルダは消える
 
-  const filePath = path.join(process.cwd(), 'templates', ${template}.docx);
+  const filePath = path.join(process.cwd(), 'templates', `${template}.docx`);
   if (!fs.existsSync(filePath)) return new Response('Template not found', { status: 400 });
 
   const zip = new PizZip(fs.readFileSync(filePath));
@@ -77,8 +89,12 @@ export async function POST(req: Request) {
   doc.setOptions({ nullGetter: () => '' });
   doc.setData(data);
 
-  try { doc.render(); }
-  catch (e: any) { return new Response('Template render error: ' + e.message, { status: 500 }); }
+  try {
+    doc.render();
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return new Response('Template render error: ' + message, { status: 500 });
+  }
 
   const out = doc.getZip().generate({ type: 'nodebuffer' });
 
@@ -86,7 +102,7 @@ export async function POST(req: Request) {
   return new Response(out, {
     headers: {
       'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'Content-Disposition': 'attachment; filename=""filled.docx""'
+      'Content-Disposition': 'attachment; filename="filled.docx"'
     }
   });
 }

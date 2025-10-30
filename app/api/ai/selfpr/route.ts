@@ -14,8 +14,11 @@ export async function POST(req: Request) {
 
   const prompt = [
     '以下の5項目を基に、日本語で300〜400字の自己PRを1段落で作成してください。',
-    強み:, エピソード:, 価値観:,
-    企業への貢献:, 転職で実現したいこと:
+    `強み: ${input.strengths}`,
+    `エピソード: ${input.episode}`,
+    `価値観: ${input.values}`,
+    `企業への貢献: ${input.contribution}`,
+    `転職で実現したいこと: ${input.goal}`
   ].join('\n');
 
   const res = await gen.generateContent({ contents: [{ role: 'user', parts: [{ text: prompt }] }] });
