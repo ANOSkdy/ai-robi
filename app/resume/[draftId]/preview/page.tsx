@@ -17,7 +17,7 @@ export default async function ResumePreviewPage({ params }: { params: { draftId:
     );
   }
 
-  const parsed = resumePayloadSchema.deepPartial().safeParse(draft.payload ?? {});
+  const parsed = resumePayloadSchema.partial().safeParse(draft.payload ?? {});
   const data = parsed.success ? parsed.data : {};
   const statusLabel = draft.status === 'submitted' ? '送信済み' : '下書き';
 

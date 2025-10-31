@@ -40,7 +40,7 @@ const stepDefinitions = [
 type StepDefinition = (typeof stepDefinitions)[number];
 type StepId = StepDefinition['id'];
 
-const formSchema = resumePayloadSchema.deepPartial();
+const formSchema = resumePayloadSchema.partial();
 
 type ResumeFormValues = Partial<ResumePayload> & {
   skills?: ResumePayload['skills'];

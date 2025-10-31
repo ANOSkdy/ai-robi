@@ -17,7 +17,7 @@ export default async function CvPreviewPage({ params }: { params: { draftId: str
     );
   }
 
-  const parsed = cvPayloadSchema.deepPartial().safeParse(draft.payload ?? {});
+  const parsed = cvPayloadSchema.partial().safeParse(draft.payload ?? {});
   const data = parsed.success ? parsed.data : {};
   const statusLabel = draft.status === 'submitted' ? '送信済み' : '下書き';
 
