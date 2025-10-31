@@ -33,12 +33,12 @@ export default function ResumeFields() {
           <div style={col}>
             <label>氏名</label>
             <input {...register('name')} />
-            <FieldError msg={errors.name?.message} />
+            <FieldError error={errors.name} />
           </div>
           <div style={col}>
             <label>ふりがな</label>
             <input {...register('name_furigana')} />
-            <FieldError msg={errors.name_furigana?.message} />
+            <FieldError error={errors.name_furigana} />
           </div>
           <div style={col}>
             <label>生年月日（年/月/日）</label>
@@ -47,7 +47,7 @@ export default function ResumeFields() {
               <input placeholder="MM" {...register('birth_month')} style={{ width:80 }} />
               <input placeholder="DD" {...register('birth_day')} style={{ width:80 }} />
             </div>
-            <FieldError msg={errors.birth_year?.message || errors.birth_month?.message || errors.birth_day?.message} />
+            <FieldError error={errors.birth_year ?? errors.birth_month ?? errors.birth_day} />
           </div>
           <div style={col}>
             <label>性別</label>
@@ -68,27 +68,27 @@ export default function ResumeFields() {
           <div style={col}>
             <label>郵便番号</label>
             <input {...register('address_postal_code')} />
-            <FieldError msg={errors.address_postal_code?.message} />
+            <FieldError error={errors.address_postal_code} />
           </div>
           <div style={col}>
             <label>住所</label>
             <input {...register('address_main')} />
-            <FieldError msg={errors.address_main?.message} />
+            <FieldError error={errors.address_main} />
           </div>
           <div style={col}>
             <label>ふりがな</label>
             <input {...register('address_furigana')} />
-            <FieldError msg={errors.address_furigana?.message} />
+            <FieldError error={errors.address_furigana} />
           </div>
           <div style={col}>
             <label>電話番号</label>
             <input {...register('phone')} />
-            <FieldError msg={errors.phone?.message} />
+            <FieldError error={errors.phone} />
           </div>
           <div style={col}>
             <label>メール</label>
             <input {...register('email')} />
-            <FieldError msg={errors.email?.message} />
+            <FieldError error={errors.email} />
           </div>
         </div>
         <div style={{ marginTop: 8 }}>
@@ -132,9 +132,28 @@ export default function ResumeFields() {
   );
 }
 
-function FieldError({ msg }: { msg?: string }) {
-  if (!msg) return null;
-  return <p style={{ color: 'crimson', margin: 0 }}>{msg}</p>;
+function FieldError({ error }: { error?: unknown }) {
+  const message = getErrorMessage(error);
+  if (!message) return null;
+  return <p style={{ color: 'crimson', margin: 0 }}>{message}</p>;
+}
+
+function getErrorMessage(error: unknown): string | undefined {
+  if (!error) return undefined;
+  if (typeof error === 'string') return error;
+  if (Array.isArray(error)) {
+    for (const entry of error) {
+      const msg = getErrorMessage(entry);
+      if (msg) return msg;
+    }
+    return undefined;
+  }
+  if (typeof error === 'object') {
+    const maybeMessage = (error as { message?: unknown }).message;
+    if (typeof maybeMessage === 'string') return maybeMessage;
+    if (maybeMessage) return getErrorMessage(maybeMessage);
+  }
+  return undefined;
 }
 
 const card: CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, background: '#fff', boxShadow: '0 1px 2px rgba(0,0,0,.03)' };
