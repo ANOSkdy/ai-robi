@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import './globals.css';
+import './resume/theme.css';
 
 export const metadata: Metadata = {
   title: 'AI 履歴書・職務経歴書ジェネレーター',
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja" className="scroll-smooth">
-      <body className="min-h-screen bg-bg text-fg antialiased">
+      <body className="eco min-h-screen bg-bg text-fg antialiased">
         <header className="sticky top-0 z-40 border-b border-border/60 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
           <div className="container flex h-14 items-center justify-between">
             <div className="flex items-center gap-3">

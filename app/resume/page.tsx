@@ -9,8 +9,6 @@ import ResultSection from '@/components/ResultSection';
 import LeafIcon from '@/components/icons/Leaf';
 import SunIcon from '@/components/icons/Sun';
 import { OverlayProvider } from '@/components/OverlayProvider';
-import './theme.css';
-
 export default function ResumeAppPage() {
   const methods = useForm<ResumeFormData>({
     resolver: zodResolver(resumeFormSchema),
