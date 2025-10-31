@@ -19,7 +19,7 @@ export default function FormSection({ onSubmit }: { onSubmit: () => void }) {
         </button>
         <div className="eco-spacer" />
         <button type="submit" className="eco-submit">
-          入力を確定
+          入力内容を確定してPDF生成へ
         </button>
       </div>
       {tab === 'resume' ? <ResumeFields /> : <CvFields />}

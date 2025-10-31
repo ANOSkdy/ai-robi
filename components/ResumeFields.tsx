@@ -4,11 +4,11 @@ import { useFormContext } from 'react-hook-form';
 import type { FieldError as RHFFieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 import PhotoUpload from './PhotoUpload';
 import DynamicHistoryFields from './DynamicHistoryFields';
+import DynamicQualificationFields from './DynamicQualificationFields';
 import AiResumePr from './AiResumePr';
 import PlantDivider from './PlantDivider';
 import LeafIcon from './icons/Leaf';
 import DropletIcon from './icons/Droplet';
-import RecycleIcon from './icons/Recycle';
 
 export default function ResumeFields() {
   const { register, formState: { errors }, watch, setValue } = useFormContext();
@@ -141,12 +141,7 @@ export default function ResumeFields() {
       </section>
 
       <section className="eco-card">
-        <h3 className="eco-h3"><RecycleIcon width={18} height={18} /> 免許・資格</h3>
-        <p style={{ opacity: .7 }}>※必要に応じて上段の学歴・職歴欄に統合しても構いません。</p>
-        <ul className="eco-leaf-list">
-          <li>入出力整形や追記のための自由記述欄を活用可</li>
-          <li>PDFテンプレート側に自動で反映</li>
-        </ul>
+        <DynamicQualificationFields />
       </section>
 
       <section className="eco-card">
@@ -161,12 +156,12 @@ export default function ResumeFields() {
   );
 }
 
-type ErrorLike =
-  | string
-  | RHFFieldError
-  | FieldErrorsImpl<any>
-  | Merge<RHFFieldError, FieldErrorsImpl<any>>
-  | undefined;
+  type ErrorLike =
+    | string
+    | RHFFieldError
+    | FieldErrorsImpl<Record<string, unknown>>
+    | Merge<RHFFieldError, FieldErrorsImpl<Record<string, unknown>>>
+    | undefined;
 
 function FieldError({ error }: { error?: ErrorLike }) {
   const message = extractMessage(error);

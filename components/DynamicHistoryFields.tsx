@@ -1,26 +1,31 @@
 'use client';
+import { useEffect } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
 export default function DynamicHistoryFields() {
   const { control, register } = useFormContext();
   const { fields, append, remove } = useFieldArray({ control, name: 'history' });
 
+  // GAS同様、初期表示で1行追加
+  useEffect(() => {
+    if (fields.length === 0) append({ year: '', month: '', description: '', status: '入学' });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div style={{ display: 'grid', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <h3 className="eco-h3" style={{ margin: 0 }}>学歴・職歴</h3>
-        <button type="button" className="eco-btn eco-btn-primary" onClick={() => append({ year: '', month: '', description: '', status: '入学' })}>追加</button>
+        <button
+          type="button"
+          className="eco-btn eco-btn-primary"
+          onClick={() => append({ year: '', month: '', description: '', status: '入学' })}
+        >
+          追加
+        </button>
       </div>
       <table className="eco-table">
-        <thead>
-          <tr>
-            <th>年</th>
-            <th>月</th>
-            <th>区分</th>
-            <th>内容</th>
-            <th></th>
-          </tr>
-        </thead>
+        <thead><tr><th>年</th><th>月</th><th>区分</th><th>内容</th><th></th></tr></thead>
         <tbody>
           {fields.map((f, i) => (
             <tr key={f.id}>
@@ -36,3 +41,4 @@ export default function DynamicHistoryFields() {
     </div>
   );
 }
+
