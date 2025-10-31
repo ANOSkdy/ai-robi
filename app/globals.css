@@ -2,26 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== Design Tokens (Business-like Neutral) ===== */
 :root {
-  --bg: 255 255 255;
-  --fg: 17 24 39;           /* gray-900 */
-  --muted-fg: 107 114 128;  /* gray-500 */
-  --border: 229 231 235;    /* gray-200 */
-  --ring: 0 0 0;            /* black */
+  --brand-green1: 27 81 45;
+  --brand-green2: 127 176 105;
+  --brand-earth1: 230 170 104;
+  --brand-earth2: 166 116 88;
+  --brand-light: 243 249 227;
+  --bg: var(--brand-light);
+  --fg: 27 59 38;
+  --muted-fg: 82 110 92;
+  --border: 198 214 194;
+  --ring: var(--brand-earth1);
+  --shadow-soft: 0 18px 45px -24px rgba(20, 46, 28, 0.25);
+  --shadow-strong: 0 30px 80px -40px rgba(27, 81, 45, 0.28);
 }
 
 .bg-bg { background-color: rgb(var(--bg)); }
 .text-fg { color: rgb(var(--fg)); }
 .text-muted-fg { color: rgb(var(--muted-fg)); }
 .border-border { border-color: rgb(var(--border)); }
+.bg-brand-light { background-color: rgb(var(--brand-light)); }
 
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
     border-color: rgb(var(--border));
   }
   body {
+    min-height: 100vh;
+    background:
+      radial-gradient(1200px 620px at 120% -10%, rgba(127, 176, 105, 0.16) 0%, transparent 65%),
+      radial-gradient(880px 540px at -20% 5%, rgba(230, 170, 104, 0.18) 0%, transparent 70%),
+      linear-gradient(135deg, rgba(243, 249, 227, 1) 0%, rgba(243, 249, 227, 0.92) 100%);
+    background-color: rgb(var(--bg));
     color: rgb(var(--fg));
+  }
+  a {
+    color: rgb(var(--brand-green2));
+  }
+  a:hover {
+    color: rgb(var(--brand-green1));
   }
 }
 
@@ -30,7 +51,7 @@
     margin-left: auto;
     margin-right: auto;
     width: 100%;
-    max-width: 72rem;
+    max-width: 78rem;
     padding-left: 1rem;
     padding-right: 1rem;
   }
@@ -46,42 +67,134 @@
       padding-right: 2rem;
     }
   }
+
   .card {
-    border-radius: 1rem;
-    background-color: rgb(255 255 255 / 1);
-    box-shadow: 0 20px 45px -24px rgb(15 23 42 / 0.25);
-    border: 1px solid rgb(0 0 0 / 0.05);
+    border-radius: 2rem;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(27, 81, 45, 0.08);
   }
+
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 1rem;
-    font-weight: 500;
-    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
-    padding: 0 1rem;
-    min-height: 2.5rem;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+    padding: 0 1.2rem;
+    min-height: 2.75rem;
     outline: none;
+    border: 1px solid transparent;
   }
   .btn:focus-visible {
-    box-shadow: 0 0 0 2px rgb(var(--ring) / 0.2);
+    outline: 2px solid rgba(var(--ring) / 1);
+    outline-offset: 3px;
   }
   .btn:disabled {
     opacity: 0.5;
     pointer-events: none;
   }
   .btn-primary {
-    background-color: rgb(0 0 0 / 1);
-    color: #fff;
+    background-color: rgb(var(--brand-green2));
+    color: #0f2e1b;
+    border-color: rgba(27, 81, 45, 0.12);
+    box-shadow: 0 12px 24px -16px rgba(27, 81, 45, 0.35);
   }
   .btn-primary:hover {
-    background-color: rgb(38 38 38 / 1);
+    transform: translateY(-1px);
+    background-color: color-mix(in oklab, rgb(var(--brand-green2)) 88%, white 12%);
   }
   .btn-secondary {
-    background-color: rgb(245 245 245 / 1);
-    color: rgb(23 23 23 / 1);
+    background: rgba(255, 255, 255, 0.72);
+    color: rgb(var(--brand-green1));
+    border-color: rgba(166, 116, 88, 0.28);
   }
   .btn-secondary:hover {
-    background-color: rgb(229 229 229 / 1);
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
+
+.bg-paper {
+  background-color: rgb(var(--brand-light));
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.75) 0%, transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(127, 176, 105, 0.08) 0%, transparent 50%),
+    url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none"%3E%3Cpath d="M0 80 Q40 70 80 80 T160 80" stroke="%23d9e6d0" stroke-width="0.8" stroke-linecap="round"/%3E%3Cpath d="M80 0 Q70 40 80 80 T80 160" stroke="%23f2eadc" stroke-width="0.8" stroke-linecap="round"/%3E%3C/svg%3E');
+  background-blend-mode: multiply;
+}
+
+.bg-wood {
+  background-color: #f0e6d6;
+  background-image:
+    linear-gradient(145deg, rgba(166, 116, 88, 0.14) 0%, rgba(230, 170, 104, 0.12) 100%),
+    repeating-linear-gradient(0deg, rgba(166, 116, 88, 0.08), rgba(166, 116, 88, 0.08) 4px, rgba(243, 249, 227, 0.08) 4px, rgba(243, 249, 227, 0.08) 8px);
+}
+
+.leaf-clip-a {
+  clip-path: path('M0,0 C0.35,0 0.6,0.08 0.82,0.26 C0.94,0.36 1,0.5 1,0.64 C1,0.83 0.92,0.96 0.78,1 C0.58,1.06 0.42,1 0.26,0.92 C0.12,0.85 0,0.74 0,0.58 Z');
+}
+
+.leaf-clip-b {
+  clip-path: path('M0,0.4 C0.12,0.08 0.38,-0.04 0.64,0.04 C0.84,0.1 1,0.26 1,0.46 C1,0.7 0.86,0.9 0.66,1 C0.38,1.14 0.12,1 0,0.68 Z');
+}
+
+.focus-outline-brand {
+  outline: 2px solid rgba(var(--ring) / 1);
+  outline-offset: 4px;
+}
+
+.form-surface {
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 30px 38px 32px 34px / 34px 30px 38px 32px;
+  border: 1px solid rgba(27, 81, 45, 0.12);
+  box-shadow: 0 18px 40px -28px rgba(27, 81, 45, 0.35);
+}
+
+input.rounded-organic,
+textarea.rounded-organic,
+select.rounded-organic {
+  border-radius: 28px 36px 30px 30px / 30px 32px 36px 28px;
+}
+
+input.brand-field,
+textarea.brand-field,
+select.brand-field {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(27, 81, 45, 0.18);
+  padding: 0.85rem 1rem;
+  color: rgb(var(--fg));
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+  box-shadow: inset 0 1px 2px rgba(27, 81, 45, 0.08);
+}
+
+input.brand-field:focus-visible,
+textarea.brand-field:focus-visible,
+select.brand-field:focus-visible {
+  border-color: rgba(var(--ring) / 1);
+  box-shadow: 0 0 0 3px rgba(230, 170, 104, 0.35);
+  outline: none;
+}
+
+input.brand-field[aria-invalid='true'],
+textarea.brand-field[aria-invalid='true'],
+select.brand-field[aria-invalid='true'] {
+  border-color: rgba(230, 100, 80, 0.7);
+  box-shadow: 0 0 0 2px rgba(230, 100, 80, 0.25);
+}
+
+.validation-text {
+  color: #8d2f2f;
+  font-size: 0.875rem;
+}
+
+@media print {
+  .bg-paper,
+  .bg-wood {
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
