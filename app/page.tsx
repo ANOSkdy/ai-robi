@@ -2,6 +2,11 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import StampCard from '@/components/StampCard';
+import OrganicDivider from '@/components/OrganicDivider';
+import LeafIcon from '@/components/icons/Leaf';
+import DropletIcon from '@/components/icons/Droplet';
+import SunIcon from '@/components/icons/Sun';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Textarea from '../components/ui/Textarea';
@@ -40,7 +45,64 @@ type CvDocxPayload = {
   };
 };
 
-export default function Page() {
+export default function HomePage() {
+  const cards = [
+    {
+      title: '履歴書の作成',
+      description: '基本情報から資格・スキルまで、自然派トーンで整えたガイドに沿って入力するだけ。途中保存にも対応。',
+      href: '/resume',
+      icon: <LeafIcon width={16} height={16} aria-hidden />,
+    },
+    {
+      title: '職務経歴書の作成',
+      description: '実績やスキルをステップごとに整理し、印象的な職務経歴書を完成。過去のエピソードもやさしく捕まえます。',
+      href: '/work-history',
+      icon: <DropletIcon width={16} height={16} aria-hidden />,
+    },
+  ];
+
+  return (
+    <div className="relative grid gap-14">
+      <div className="relative mx-auto max-w-3xl text-center">
+        <span className="leaf-clip-a absolute -left-12 top-4 h-16 w-16 bg-brand-earth1/20" aria-hidden />
+        <span className="leaf-clip-b absolute -right-10 bottom-2 h-12 w-12 bg-brand-green2/20" aria-hidden />
+        <p className="inline-flex items-center gap-2 rounded-full border border-brand-green2/40 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-brand-green1">
+          自然派ワークフロー
+        </p>
+        <h1 className="mt-6 text-4xl font-semibold tracking-tight text-brand-green1 sm:text-[2.75rem]">
+          有機的なリズムで履歴書と職務経歴書を仕上げる
+        </h1>
+        <p className="mt-4 text-base leading-relaxed text-brand-earth2/90">
+          グリーンとアースのパレット、紙質のテクスチャ、手書きの区切りをまとったウィザードで、応募書類づくりを心地よくサポートします。
+        </p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-brand-green1">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2">
+            <SunIcon width={16} height={16} aria-hidden />
+            フォーカスリングとコントラストの最適化
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2">
+            <LeafIcon width={16} height={16} aria-hidden />
+            Step-by-step ナビゲーション
+          </span>
+        </div>
+      </div>
+
+      <OrganicDivider variant="vine" className="mx-auto max-w-4xl" />
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {cards.map((card) => (
+          <StampCard key={card.title} {...card} />
+        ))}
+      </div>
+
+      <p className="text-center text-sm text-brand-earth2/80">
+        以前のダッシュボード体験は <strong>LegacyHomeExperience</strong> コンポーネントとして残してあります。
+      </p>
+    </div>
+  );
+}
+
+export function LegacyHomeExperience() {
   const [tab, setTab] = useState<'resume' | 'cv'>('resume');
   const [status, setStatus] = useState('');
   const [selfpr, setSelfpr] = useState('');
@@ -157,8 +219,7 @@ export default function Page() {
         </CardHeader>
         <CardContent className="pt-2">
           <p className="text-sm text-neutral-600">
-            段階式フォーム + 自動保存付きの CV / 履歴書ウィザードを別タブで開けます。
-            入力途中でも下書きが保存され、後から続きができます。
+            段階式フォーム + 自動保存付きの CV / 履歴書ウィザードを別タブで開けます。入力途中でも下書きが保存され、後から続きができます。
           </p>
           <div className="flex flex-wrap gap-2 pt-2">
             <Link className="btn btn-primary" href="/cv/new">
@@ -177,7 +238,7 @@ export default function Page() {
             <CardTitle>履歴書</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <Label htmlFor="name">氏名</Label>
                 <Input id="name" placeholder="山田 太郎" defaultValue="山田 太郎" />
@@ -217,7 +278,7 @@ export default function Page() {
           <CardContent>
             <div className="grid gap-3">
               <Label>入力素材</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Textarea placeholder="経歴概要" />
                 <Textarea placeholder="職務経験の詳細" />
                 <Textarea placeholder="実績" />
