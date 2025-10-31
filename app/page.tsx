@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -149,6 +150,26 @@ export default function Page() {
         {tabBtn('cv', '職務経歴書')}
         <span className="ml-auto text-sm text-muted-fg">{status}</span>
       </div>
+
+      <Card className="border-dashed bg-neutral-50">
+        <CardHeader className="border-none pb-0">
+          <CardTitle>新しいウィザード版を試す</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2">
+          <p className="text-sm text-neutral-600">
+            段階式フォーム + 自動保存付きの CV / 履歴書ウィザードを別タブで開けます。
+            入力途中でも下書きが保存され、後から続きができます。
+          </p>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <Link className="btn btn-primary" href="/cv/new">
+              履歴書ウィザードを開く
+            </Link>
+            <Link className="btn btn-secondary" href="/resume/new">
+              職務経歴書ウィザードを開く
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       {tab === 'resume' ? (
         <Card>
