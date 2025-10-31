@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import type { DocType, DraftPayload } from '@/lib/drafts-repo';
 import {
   createDraftRepo,
   getDraftRepo,
