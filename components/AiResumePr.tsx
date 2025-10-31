@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import SunIcon from './icons/Sun';
 
 export default function AiResumePr() {
   const { register, getValues, setValue } = useFormContext();
@@ -35,21 +36,22 @@ export default function AiResumePr() {
   };
 
   return (
-    <div style={{ display: 'grid', gap: 8 }}>
-      <h3 style={{ marginBottom: 4 }}>AI自己PR生成</h3>
+    <div style={{ display: 'grid', gap: 10 }}>
+      <h3 className="eco-h3" style={{ marginBottom: 4 }}><SunIcon width={18} height={18} /> AI自己PR生成</h3>
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} style={{ display: 'grid', gap: 4 }}>
-          <label>Q{i+1}</label>
+        <div key={i} className="eco-col">
+          <label className="eco-label">Q{i+1}</label>
           <textarea rows={3} {...register(`q${i+1}_resume` as const)} />
         </div>
       ))}
-      <button type="button" onClick={handleGenerate} disabled={loading}>{loading ? '生成中...' : '自己PRを生成'}</button>
-      <div style={{ display: 'grid', gap: 4 }}>
-        <label>生成結果（自己PR）</label>
+      <button type="button" className="eco-btn eco-btn-primary" onClick={handleGenerate} disabled={loading}>
+        {loading ? '生成中...' : '自己PRを生成'}
+      </button>
+      <div className="eco-col">
+        <label className="eco-label">生成結果（自己PR）</label>
         <textarea rows={8} {...register('generated_resume_pr')} />
       </div>
-      {error ? <p style={{ color: 'crimson' }}>{error}</p> : null}
+      {error ? <p style={{ color: '#8d2f2f' }}>{error}</p> : null}
     </div>
   );
 }
-

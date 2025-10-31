@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 export default function CvFields() {
-  const { register, getValues, setValue } = useFormContext();
+  const { register, getValues, setValue, watch } = useFormContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,35 +39,39 @@ export default function CvFields() {
     }
   };
 
+  const summary = watch('generated_cv_summary') as string | undefined;
+  const details = watch('generated_cv_details') as string | undefined;
+  const skills = watch('generated_cv_skills') as string | undefined;
+  const pr = watch('generated_cv_pr') as string | undefined;
+
   return (
     <div style={{ display: 'grid', gap: 12 }}>
-      <h3 style={{ margin: 0 }}>職務経歴書（入力 & AI生成）</h3>
+      <h3 className="eco-h3" style={{ margin: 0 }}>職務経歴書（入力 & AI生成）</h3>
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} style={{ display: 'grid', gap: 4 }}>
-          <label>Q{i+1}</label>
+        <div key={i} className="eco-col">
+          <label className="eco-label">Q{i+1}</label>
           <textarea rows={3} {...register(`q${i+1}_cv` as const)} />
         </div>
       ))}
-      <button type="button" onClick={gen} disabled={loading}>{loading ? '生成中...' : '職務経歴書をAI生成'}</button>
-      {error ? <p style={{ color: 'crimson' }}>{error}</p> : null}
+      <button type="button" className="eco-btn eco-btn-primary" onClick={gen} disabled={loading}>{loading ? '生成中...' : '職務経歴書をAI生成'}</button>
+      {error ? <p style={{ color: '#8d2f2f' }}>{error}</p> : null}
 
-      <div style={{ display: 'grid', gap: 6 }}>
-        <label>要約</label>
-        <textarea rows={4} {...register('generated_cv_summary')} />
+      <div className="eco-col">
+        <label className="eco-label">要約</label>
+        <textarea rows={4} {...register('generated_cv_summary')} defaultValue={summary} />
       </div>
-      <div style={{ display: 'grid', gap: 6 }}>
-        <label>詳細</label>
-        <textarea rows={6} {...register('generated_cv_details')} />
+      <div className="eco-col">
+        <label className="eco-label">詳細</label>
+        <textarea rows={6} {...register('generated_cv_details')} defaultValue={details} />
       </div>
-      <div style={{ display: 'grid', gap: 6 }}>
-        <label>スキル</label>
-        <textarea rows={4} {...register('generated_cv_skills')} />
+      <div className="eco-col">
+        <label className="eco-label">スキル</label>
+        <textarea rows={4} {...register('generated_cv_skills')} defaultValue={skills} />
       </div>
-      <div style={{ display: 'grid', gap: 6 }}>
-        <label>自己PR</label>
-        <textarea rows={6} {...register('generated_cv_pr')} />
+      <div className="eco-col">
+        <label className="eco-label">自己PR</label>
+        <textarea rows={6} {...register('generated_cv_pr')} defaultValue={pr} />
       </div>
     </div>
   );
 }
-

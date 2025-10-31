@@ -15,27 +15,25 @@ export default function ResultSection({ formData, onBack }: { formData: ResumeFo
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'PDF生成に失敗しました');
       const b64 = json.pdfBase64 as string;
-      const bytes = Uint8Array.from(atob(b64), char => char.charCodeAt(0));
-      const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      const blob = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       window.open(url, '_blank');
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'PDFエラー';
-      alert(message);
+      alert(error instanceof Error ? error.message : 'PDFエラー');
     } finally {
       setLoading(null);
     }
   };
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
+    <div className="eco-card" style={{ display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button onClick={onBack} type="button">← 入力に戻る</button>
+        <button onClick={onBack} type="button" className="eco-btn">← 入力に戻る</button>
       </div>
-      <div style={{ display: 'flex', gap: 12 }}>
-        <button type="button" onClick={() => gen('resume')} disabled={loading!==null}>{loading==='resume'?'生成中...':'履歴書PDFを生成'}</button>
-        <button type="button" onClick={() => gen('cv')} disabled={loading!==null}>{loading==='cv'?'生成中...':'職務経歴書PDFを生成'}</button>
+      <div className="eco-result-actions">
+        <button type="button" className="eco-btn eco-btn-primary" onClick={() => gen('resume')} disabled={loading!==null}>{loading==='resume'?'生成中...':'履歴書PDFを生成'}</button>
+        <button type="button" className="eco-btn eco-btn-primary" onClick={() => gen('cv')} disabled={loading!==null}>{loading==='cv'?'生成中...':'職務経歴書PDFを生成'}</button>
       </div>
-      <p style={{ opacity:.7 }}>PDFは新しいタブで開きます。</p>
+      <p style={{ opacity:.7, margin: 0 }}>PDFは新しいタブで開きます。</p>
     </div>
   );
 }
-

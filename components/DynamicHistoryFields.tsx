@@ -1,5 +1,4 @@
 'use client';
-import { type CSSProperties } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
 
 export default function DynamicHistoryFields() {
@@ -9,27 +8,27 @@ export default function DynamicHistoryFields() {
   return (
     <div style={{ display: 'grid', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <h3 style={{ margin: 0 }}>学歴・職歴</h3>
-        <button type="button" onClick={() => append({ year: '', month: '', description: '', status: '入学' })}>追加</button>
+        <h3 className="eco-h3" style={{ margin: 0 }}>学歴・職歴</h3>
+        <button type="button" className="eco-btn eco-btn-primary" onClick={() => append({ year: '', month: '', description: '', status: '入学' })}>追加</button>
       </div>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <table className="eco-table">
         <thead>
           <tr>
-            <th style={th}>年</th>
-            <th style={th}>月</th>
-            <th style={th}>区分</th>
-            <th style={th}>内容</th>
-            <th style={th}></th>
+            <th>年</th>
+            <th>月</th>
+            <th>区分</th>
+            <th>内容</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           {fields.map((f, i) => (
             <tr key={f.id}>
-              <td style={td}><input style={input} {...register(`history.${i}.year` as const)} /></td>
-              <td style={td}><input style={input} {...register(`history.${i}.month` as const)} /></td>
-              <td style={td}><input style={input} {...register(`history.${i}.status` as const)} /></td>
-              <td style={td}><input style={input} {...register(`history.${i}.description` as const)} /></td>
-              <td style={td}><button type="button" onClick={() => remove(i)}>削除</button></td>
+              <td><input {...register(`history.${i}.year` as const)} /></td>
+              <td><input {...register(`history.${i}.month` as const)} /></td>
+              <td><input {...register(`history.${i}.status` as const)} /></td>
+              <td><input {...register(`history.${i}.description` as const)} /></td>
+              <td><button type="button" className="eco-btn eco-btn-danger" onClick={() => remove(i)}>削除</button></td>
             </tr>
           ))}
         </tbody>
@@ -37,8 +36,3 @@ export default function DynamicHistoryFields() {
     </div>
   );
 }
-
-const th: CSSProperties = { borderBottom: '1px solid #e5e7eb', textAlign: 'left', padding: 8, fontWeight: 600 };
-const td: CSSProperties = { borderBottom: '1px solid #f1f5f9', padding: 8, verticalAlign: 'top' };
-const input: CSSProperties = { width: '100%' };
-
