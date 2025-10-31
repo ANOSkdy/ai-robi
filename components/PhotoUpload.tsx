@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 import { useState, type ChangeEvent } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -28,14 +29,10 @@ export default function PhotoUpload({ name = 'photo' }: Props) {
 
   return (
     <div style={{ display: 'grid', gap: 8 }}>
-      <label style={{ fontWeight: 600 }}>写真アップロード</label>
+      <label className="eco-label">写真アップロード</label>
       <input type="file" accept="image/*" onChange={onChange} />
       {previewUrl || current ? (
-        <img
-          src={previewUrl || current}
-          alt="preview"
-          style={{ width: 160, height: 160, objectFit: 'cover', border: '1px solid #ddd', borderRadius: 8 }}
-        />
+        <img src={previewUrl || current} alt="preview" className="eco-photo" />
       ) : null}
     </div>
   );

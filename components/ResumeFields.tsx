@@ -1,56 +1,55 @@
 'use client';
-import { useEffect, type CSSProperties } from 'react';
+import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import PhotoUpload from './PhotoUpload';
 import DynamicHistoryFields from './DynamicHistoryFields';
 import AiResumePr from './AiResumePr';
+import PlantDivider from './PlantDivider';
+import LeafIcon from './icons/Leaf';
+import DropletIcon from './icons/Droplet';
+import RecycleIcon from './icons/Recycle';
 
 export default function ResumeFields() {
   const { register, formState: { errors }, watch, setValue } = useFormContext();
   const same = watch('same_as_current_address') as boolean | undefined;
-  const addressPostal = watch('address_postal_code') as string | undefined;
-  const addressMain = watch('address_main') as string | undefined;
-  const addressFurigana = watch('address_furigana') as string | undefined;
-  const phone = watch('phone') as string | undefined;
-  const email = watch('email') as string | undefined;
 
   useEffect(() => {
     if (same) {
-      setValue('contact_address_postal_code', addressPostal);
-      setValue('contact_address_main', addressMain);
-      setValue('contact_address_furigana', addressFurigana);
-      setValue('contact_phone', phone);
-      setValue('contact_email', email);
+      setValue('contact_address_postal_code', watch('address_postal_code'));
+      setValue('contact_address_main', watch('address_main'));
+      setValue('contact_address_furigana', watch('address_furigana'));
+      setValue('contact_phone', watch('phone'));
+      setValue('contact_email', watch('email'));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [same, addressPostal, addressMain, addressFurigana, phone, email]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [same, watch('address_postal_code'), watch('address_main'), watch('address_furigana'), watch('phone'), watch('email')]);
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
-      <section style={card}>
-        <h3 style={h3}>基本情報</h3>
-        <div style={grid2}>
-          <div style={col}>
-            <label>氏名</label>
+      <section className="eco-card">
+        <h3 className="eco-h3"><LeafIcon width={18} height={18} /> 基本情報</h3>
+        <div className="eco-grid2">
+          <div className="eco-col">
+            <label className="eco-label">氏名</label>
             <input {...register('name')} />
-            <FieldError error={errors.name} />
+            <FieldError msg={errors.name?.message} />
           </div>
-          <div style={col}>
-            <label>ふりがな</label>
+          <div className="eco-col">
+            <label className="eco-label">ふりがな</label>
             <input {...register('name_furigana')} />
-            <FieldError error={errors.name_furigana} />
+            <FieldError msg={errors.name_furigana?.message} />
           </div>
-          <div style={col}>
-            <label>生年月日（年/月/日）</label>
+          <div className="eco-col">
+            <label className="eco-label">生年月日（年/月/日）</label>
             <div style={{ display:'flex', gap:8 }}>
               <input placeholder="YYYY" {...register('birth_year')} style={{ width:120 }} />
               <input placeholder="MM" {...register('birth_month')} style={{ width:80 }} />
               <input placeholder="DD" {...register('birth_day')} style={{ width:80 }} />
             </div>
-            <FieldError error={errors.birth_year ?? errors.birth_month ?? errors.birth_day} />
+            <FieldError msg={errors.birth_year?.message || errors.birth_month?.message || errors.birth_day?.message} />
           </div>
-          <div style={col}>
-            <label>性別</label>
+          <div className="eco-col">
+            <label className="eco-label">性別</label>
             <select {...register('gender')}>
               <option value="未選択">未選択</option>
               <option value="男性">男性</option>
@@ -59,36 +58,40 @@ export default function ResumeFields() {
             </select>
           </div>
         </div>
-        <PhotoUpload />
+        <div style={{ marginTop: 10 }}>
+          <PhotoUpload />
+        </div>
       </section>
 
-      <section style={card}>
-        <h3 style={h3}>現住所</h3>
-        <div style={grid2}>
-          <div style={col}>
-            <label>郵便番号</label>
+      <PlantDivider tone="g2" />
+
+      <section className="eco-card">
+        <h3 className="eco-h3"><DropletIcon width={18} height={18} /> 現住所</h3>
+        <div className="eco-grid2">
+          <div className="eco-col">
+            <label className="eco-label">郵便番号</label>
             <input {...register('address_postal_code')} />
-            <FieldError error={errors.address_postal_code} />
+            <FieldError msg={errors.address_postal_code?.message} />
           </div>
-          <div style={col}>
-            <label>住所</label>
+          <div className="eco-col">
+            <label className="eco-label">住所</label>
             <input {...register('address_main')} />
-            <FieldError error={errors.address_main} />
+            <FieldError msg={errors.address_main?.message} />
           </div>
-          <div style={col}>
-            <label>ふりがな</label>
+          <div className="eco-col">
+            <label className="eco-label">ふりがな</label>
             <input {...register('address_furigana')} />
-            <FieldError error={errors.address_furigana} />
+            <FieldError msg={errors.address_furigana?.message} />
           </div>
-          <div style={col}>
-            <label>電話番号</label>
+          <div className="eco-col">
+            <label className="eco-label">電話番号</label>
             <input {...register('phone')} />
-            <FieldError error={errors.phone} />
+            <FieldError msg={errors.phone?.message} />
           </div>
-          <div style={col}>
-            <label>メール</label>
+          <div className="eco-col">
+            <label className="eco-label">メール</label>
             <input {...register('email')} />
-            <FieldError error={errors.email} />
+            <FieldError msg={errors.email?.message} />
           </div>
         </div>
         <div style={{ marginTop: 8 }}>
@@ -99,65 +102,45 @@ export default function ResumeFields() {
         {!same && (
           <div style={{ marginTop: 12, display: 'grid', gap: 8 }}>
             <h4 style={{ margin: 0 }}>連絡先</h4>
-            <div style={grid2}>
-              <div style={col}><label>郵便番号</label><input {...register('contact_address_postal_code')} /></div>
-              <div style={col}><label>住所</label><input {...register('contact_address_main')} /></div>
-              <div style={col}><label>ふりがな</label><input {...register('contact_address_furigana')} /></div>
-              <div style={col}><label>電話番号</label><input {...register('contact_phone')} /></div>
-              <div style={col}><label>メール</label><input {...register('contact_email')} /></div>
+            <div className="eco-grid2">
+              <div className="eco-col"><label className="eco-label">郵便番号</label><input {...register('contact_address_postal_code')} /></div>
+              <div className="eco-col"><label className="eco-label">住所</label><input {...register('contact_address_main')} /></div>
+              <div className="eco-col"><label className="eco-label">ふりがな</label><input {...register('contact_address_furigana')} /></div>
+              <div className="eco-col"><label className="eco-label">電話番号</label><input {...register('contact_phone')} /></div>
+              <div className="eco-col"><label className="eco-label">メール</label><input {...register('contact_email')} /></div>
             </div>
           </div>
         )}
       </section>
 
-      <section style={card}>
+      <PlantDivider tone="e1" />
+
+      <section className="eco-card">
         <DynamicHistoryFields />
       </section>
 
-      <section style={card}>
-        <h3 style={h3}>免許・資格</h3>
-        {/* 簡易：資格もhistoryと同様にuseFieldArrayにしてもよいが、必要最低限の入力欄を提供 */}
+      <section className="eco-card">
+        <h3 className="eco-h3"><RecycleIcon width={18} height={18} /> 免許・資格</h3>
         <p style={{ opacity: .7 }}>※必要に応じて上段の学歴・職歴欄に統合しても構いません。</p>
+        <ul className="eco-leaf-list">
+          <li>入出力整形や追記のための自由記述欄を活用可</li>
+          <li>PDFテンプレート側に自動で反映</li>
+        </ul>
       </section>
 
-      <section style={card}>
+      <section className="eco-card">
         <AiResumePr />
       </section>
 
-      <section style={card}>
-        <h3 style={h3}>本人希望欄</h3>
+      <section className="eco-card">
+        <h3 className="eco-h3">本人希望欄</h3>
         <textarea rows={4} {...register('special_requests')} />
       </section>
     </div>
   );
 }
 
-function FieldError({ error }: { error?: unknown }) {
-  const message = getErrorMessage(error);
-  if (!message) return null;
-  return <p style={{ color: 'crimson', margin: 0 }}>{message}</p>;
+function FieldError({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return <p style={{ color: '#8d2f2f', margin: 0 }}>{msg}</p>;
 }
-
-function getErrorMessage(error: unknown): string | undefined {
-  if (!error) return undefined;
-  if (typeof error === 'string') return error;
-  if (Array.isArray(error)) {
-    for (const entry of error) {
-      const msg = getErrorMessage(entry);
-      if (msg) return msg;
-    }
-    return undefined;
-  }
-  if (typeof error === 'object') {
-    const maybeMessage = (error as { message?: unknown }).message;
-    if (typeof maybeMessage === 'string') return maybeMessage;
-    if (maybeMessage) return getErrorMessage(maybeMessage);
-  }
-  return undefined;
-}
-
-const card: CSSProperties = { border: '1px solid #e5e7eb', borderRadius: 12, padding: 16, background: '#fff', boxShadow: '0 1px 2px rgba(0,0,0,.03)' };
-const grid2: CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 };
-const col: CSSProperties = { display: 'grid', gap: 6 };
-const h3: CSSProperties = { marginTop: 0 };
-

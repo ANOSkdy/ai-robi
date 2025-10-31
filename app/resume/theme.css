@@ -1,0 +1,143 @@
+/* === Eco Theme (Light) =================================================== */
+.eco {
+  /* Palette Tokens */
+  --g1: #1B512D; /* グリーン-1 */
+  --g2: #7FB069; /* グリーン-2 */
+  --e1: #E6AA68; /* アース-1 */
+  --e2: #A67458; /* アース-2 */
+  --light: #F3F9E3; /* ライト */
+  --bg: var(--light);
+  --fg: #142e1c;
+  --muted: #4a6a53;
+  --card: #ffffff;
+  --line: #e5ead6;
+  --ring: color-mix(in oklab, var(--g2), white 35%);
+  --shadow-a: 0 2px 6px rgba(0,0,0,.05);
+  --shadow-b: 0 12px 28px rgba(0,0,0,.08);
+  color: var(--fg);
+}
+
+/* Page shell + subtle paper-like texture */
+.eco .eco-shell {
+  background:
+    radial-gradient(1200px 800px at 120% -10%, color-mix(in oklab,var(--g2),white 80%) 0%, transparent 65%),
+    radial-gradient(900px 600px at -20% 10%, color-mix(in oklab,var(--e1),white 82%) 0%, transparent 70%),
+    repeating-linear-gradient(0deg, rgba(27,81,45,.02), rgba(27,81,45,.02) 2px, rgba(230,170,104,.02) 2px, rgba(230,170,104,.02) 4px),
+    var(--bg);
+  min-height: 100dvh;
+  padding: 32px 16px 48px;
+}
+.eco .eco-container { max-width: 1080px; margin: 0 auto; }
+
+/* Brand header (asymmetric, organic) */
+.eco .eco-header {
+  position: relative;
+  border-radius: 28px 42px 32px 38px / 32px 28px 42px 36px;
+  padding: 20px 20px 24px;
+  background:
+    linear-gradient(135deg, var(--g1) 0%, var(--g2) 55%, var(--e1) 100%);
+  color: #fff;
+  box-shadow: var(--shadow-b);
+  overflow: hidden;
+}
+.eco .eco-header::after {
+  content: "";
+  position: absolute; inset: -20% -10% auto auto; height: 220px; width: 220px;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.3), rgba(255,255,255,0) 60%),
+              radial-gradient(closest-side, rgba(255,255,255,.15), transparent 70%);
+  border-radius: 50% 45% 55% 50% / 50% 60% 40% 55%;
+  filter: blur(1px);
+}
+.eco .eco-title { font-size: 22px; font-weight: 700; letter-spacing: .4px; }
+.eco .eco-sub { opacity: .9; margin-top: 4px; }
+
+/* Tabs (leafy pills) */
+.eco .eco-tabs { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
+.eco .eco-tab {
+  appearance: none; border: none; cursor: pointer;
+  padding: 8px 14px; border-radius: 999px;
+  background: rgba(255,255,255,.18); color: #fff; font-weight: 600;
+  outline-offset: 3px; transition: transform .12s ease, background .2s;
+}
+.eco .eco-tab[aria-pressed="true"] { background: #fff; color: var(--g1); }
+.eco .eco-tab:focus-visible { outline: 3px solid color-mix(in oklab, #fff, black 10%); }
+.eco .eco-tab:hover { transform: translateY(-1px); }
+.eco .eco-spacer { flex: 1; }
+.eco .eco-submit { background:#fff; color: var(--g1); padding: 10px 16px; border-radius: 14px; border: none; font-weight:700; cursor: pointer; }
+.eco .eco-submit:hover { filter: brightness(1.02); }
+
+/* Cards with organic corners */
+.eco .eco-card {
+  border: 1px solid var(--line); background: var(--card);
+  border-radius: 22px 30px 24px 28px / 26px 24px 28px 22px;
+  padding: 18px; box-shadow: var(--shadow-a);
+}
+.eco .eco-card + .eco-card { margin-top: 14px; }
+.eco .eco-h3 { margin: 0 0 10px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+
+/* Organic grid (asymmetric) */
+.eco .eco-grid2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
+@media (max-width: 880px) { .eco .eco-grid2 { grid-template-columns: 1fr; } }
+
+/* Fields */
+.eco .eco-col { display: grid; gap: 6px; }
+.eco .eco-label { font-weight: 600; color: var(--muted); }
+.eco input, .eco select, .eco textarea, .eco button, .eco table {
+  font: inherit;
+}
+.eco input, .eco select, .eco textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 14px 18px 16px 16px / 16px 16px 18px 14px;
+  padding: 10px 12px; background: #fff;
+  outline: none;
+  box-shadow: 0 1px 0 rgba(0,0,0,.02) inset;
+}
+.eco input:focus, .eco select:focus, .eco textarea:focus {
+  border-color: var(--g2); box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring), white 45%);
+}
+.eco textarea { resize: vertical; }
+
+/* Buttons */
+.eco .eco-btn {
+  appearance: none; border: 1px solid var(--line);
+  background: linear-gradient(180deg,#fff, #f7faf1);
+  border-radius: 14px; padding: 8px 12px; cursor: pointer; font-weight: 600;
+  transition: transform .06s ease, box-shadow .2s ease;
+}
+.eco .eco-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-a); }
+.eco .eco-btn-primary {
+  border-color: color-mix(in oklab, var(--g2), black 10%);
+  background: linear-gradient(180deg, color-mix(in oklab,var(--g2),white 15%), color-mix(in oklab,var(--g2),black 5%));
+  color: #08361f;
+}
+.eco .eco-btn-danger {
+  border-color: color-mix(in oklab, var(--e2), black 10%);
+  background: linear-gradient(180deg, color-mix(in oklab,var(--e1),white 10%), color-mix(in oklab,var(--e2),white 15%));
+  color: #4b2b1f;
+}
+
+/* Table */
+.eco .eco-table { width: 100%; border-collapse: collapse; border-radius: 16px; overflow: hidden; }
+.eco .eco-table th, .eco .eco-table td { border: 1px solid var(--line); padding: 8px 10px; }
+.eco .eco-table th { background: color-mix(in oklab, var(--light), white 30%); text-align: left; }
+.eco .eco-table tr:hover td { background: color-mix(in oklab, var(--light), white 8%); }
+
+/* Photo preview */
+.eco .eco-photo { width: 180px; height: 180px; border: 1px solid var(--line); border-radius: 18px; object-fit: cover; }
+
+/* Leaf bullet list */
+.eco .eco-leaf-list { list-style: none; padding-left: 0; display: grid; gap: 6px; }
+.eco .eco-leaf-list li { position: relative; padding-left: 24px; }
+.eco .eco-leaf-list li::before {
+  content:""; position: absolute; left: 0; top: 6px; width: 14px; height: 14px;
+  background: currentColor;
+  -webkit-mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path fill="%23000" d="M8.4 1.2c3 .6 5.1 3.7 4.5 6.7-.7 3.6-4.5 5.8-8 4.7C2.9 11.4 1.3 8 2.5 5.2 3.9 2 6.9.7 8.4 1.2Zm-4 7c1.8-.7 4.5-2.3 6.6-4.7-2.4 2.1-4 4.8-4.6 6.7-1.1.1-1.6-.7-2-2Z"/></svg>') no-repeat center / contain;
+          mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path fill="%23000" d="M8.4 1.2c3 .6 5.1 3.7 4.5 6.7-.7 3.6-4.5 5.8-8 4.7C2.9 11.4 1.3 8 2.5 5.2 3.9 2 6.9.7 8.4 1.2Zm-4 7c1.8-.7 4.5-2.3 6.6-4.7-2.4 2.1-4 4.8-4.6 6.7-1.1.1-1.6-.7-2-2Z"/></svg>') no-repeat center / contain;
+}
+
+/* Divider vine container spacing */
+.eco .eco-divider { margin: 14px 0; }
+
+/* Result actions */
+.eco .eco-result-actions { display:flex; gap: 12px; flex-wrap: wrap; }
