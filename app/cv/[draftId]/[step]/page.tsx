@@ -50,7 +50,7 @@ const stepDefinitions = [
 type StepDefinition = (typeof stepDefinitions)[number];
 type StepId = StepDefinition['id'];
 
-const formSchema = cvPayloadSchema.deepPartial();
+const formSchema = cvPayloadSchema.partial();
 
 export default function CvWizardStepPage() {
   const params = useParams<{ draftId: string; step: StepId }>();
