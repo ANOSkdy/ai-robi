@@ -21,6 +21,9 @@ export default async function ResumePreviewPage({ params }: { params: { draftId:
   const data = parsed.success ? parsed.data : {};
   const statusLabel = draft.status === 'submitted' ? '送信済み' : '下書き';
 
+  const skillItems = Array.isArray(data.skills) ? data.skills : [];
+  const historyItems = Array.isArray(data.history) ? data.history : [];
+
   return (
     <div className="space-y-6">
       <header className="space-y-1">
@@ -38,29 +41,37 @@ export default async function ResumePreviewPage({ params }: { params: { draftId:
       <section className="space-y-2 rounded-xl border p-4">
         <h2 className="text-base font-semibold">スキル</h2>
         <div className="space-y-2 text-sm">
-          {(data.skills && data.skills.length > 0 ? data.skills : [{}]).map((skill, index) => (
-            <div key={index} className="rounded border border-dashed p-3">
-              <div className="font-medium">{skill?.name ?? '未入力'}</div>
-              <div className="text-xs text-gray-500">{skill?.level ?? 'レベル未入力'}</div>
-              <p className="text-xs text-gray-500">{skill?.description ?? '補足なし'}</p>
-            </div>
-          ))}
+          {skillItems.length === 0 ? (
+            <div className="rounded border border-dashed p-3 text-gray-500">スキルはまだ入力されていません。</div>
+          ) : (
+            skillItems.map((skill, index) => (
+              <div key={index} className="rounded border border-dashed p-3">
+                <div className="font-medium">{skill.name ?? '未入力'}</div>
+                <div className="text-xs text-gray-500">{skill.level ?? 'レベル未入力'}</div>
+                <p className="text-xs text-gray-500">{skill.description ?? '補足なし'}</p>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
       <section className="space-y-2 rounded-xl border p-4">
         <h2 className="text-base font-semibold">職歴</h2>
         <div className="space-y-2 text-sm">
-          {(data.history && data.history.length > 0 ? data.history : [{}]).map((item, index) => (
-            <div key={index} className="rounded border border-dashed p-3">
-              <div className="font-medium">{item?.company ?? '未入力'}</div>
-              <div className="text-xs text-gray-500">{item?.role ?? '役職未入力'}</div>
-              <div className="text-xs text-gray-500">
-                {item?.start ?? '-'} ~ {item?.end ?? '-'}
+          {historyItems.length === 0 ? (
+            <div className="rounded border border-dashed p-3 text-gray-500">職歴はまだ入力されていません。</div>
+          ) : (
+            historyItems.map((item, index) => (
+              <div key={index} className="rounded border border-dashed p-3">
+                <div className="font-medium">{item.company ?? '未入力'}</div>
+                <div className="text-xs text-gray-500">{item.role ?? '役職未入力'}</div>
+                <div className="text-xs text-gray-500">
+                  {item.start ?? '-'} ~ {item.end ?? '-'}
+                </div>
+                <p className="text-xs text-gray-500 whitespace-pre-wrap">{item.detail ?? '詳細未入力'}</p>
               </div>
-              <p className="text-xs text-gray-500 whitespace-pre-wrap">{item?.detail ?? '詳細未入力'}</p>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 

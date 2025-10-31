@@ -21,6 +21,8 @@ export default async function CvPreviewPage({ params }: { params: { draftId: str
   const data = parsed.success ? parsed.data : {};
   const statusLabel = draft.status === 'submitted' ? '送信済み' : '下書き';
 
+  const educationItems = Array.isArray(data.education) ? data.education : [];
+
   return (
     <div className="space-y-6">
       <header className="space-y-1">
@@ -73,15 +75,19 @@ export default async function CvPreviewPage({ params }: { params: { draftId: str
       <section className="space-y-2 rounded-xl border p-4">
         <h2 className="text-base font-semibold">学歴</h2>
         <div className="space-y-2 text-sm">
-          {(data.education && data.education.length > 0 ? data.education : [{}]).map((item, index) => (
-            <div key={index} className="rounded border border-dashed p-3">
-              <div className="font-medium">{item?.school ?? '未入力'}</div>
-              <div className="text-xs text-gray-500">{item?.degree ?? '学位未入力'}</div>
-              <div className="text-xs text-gray-500">
-                {item?.start ?? '-'} ~ {item?.end ?? '-'}
+          {educationItems.length === 0 ? (
+            <div className="rounded border border-dashed p-3 text-gray-500">学歴はまだ入力されていません。</div>
+          ) : (
+            educationItems.map((item, index) => (
+              <div key={index} className="rounded border border-dashed p-3">
+                <div className="font-medium">{item.school ?? '未入力'}</div>
+                <div className="text-xs text-gray-500">{item.degree ?? '学位未入力'}</div>
+                <div className="text-xs text-gray-500">
+                  {item.start ?? '-'} ~ {item.end ?? '-'}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </section>
 
