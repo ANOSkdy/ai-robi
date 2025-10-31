@@ -9,8 +9,9 @@ export function renderResumePdf(data: ResumeFormData): string {
     )
     .join('');
 
-  const photo = data.photo
-    ? `<img src="${data.photo}" alt="photo" />`
+  const photoSrc = normalizePhoto(data.photo);
+  const photo = photoSrc
+    ? `<img src="${photoSrc}" alt="photo" />`
     : '<div class="ph">写真</div>';
 
   return `<!doctype html><html><head><meta charSet="utf-8" /><style>${css}</style><title>履歴書</title></head><body>
@@ -66,4 +67,13 @@ const css = `
   table.grid th { background: #f8fafc; }
   .pre { white-space: pre-wrap; }
 `;
+
+function normalizePhoto(value: string | undefined | null): string | null {
+  if (!value) return null;
+  if (value.startsWith('data:')) return value;
+  if (/^https?:\/\//.test(value)) return value;
+  const clean = value.replace(/^base64,?/i, '').trim();
+  if (!clean) return null;
+  return `data:image/jpeg;base64,${clean}`;
+}
 

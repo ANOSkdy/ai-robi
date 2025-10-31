@@ -8,8 +8,7 @@ import FormSection from '@/components/FormSection';
 import ResultSection from '@/components/ResultSection';
 import LeafIcon from '@/components/icons/Leaf';
 import SunIcon from '@/components/icons/Sun';
-import './theme.css';
-
+import { OverlayProvider } from '@/components/OverlayProvider';
 export default function ResumeAppPage() {
   const methods = useForm<ResumeFormData>({
     resolver: zodResolver(resumeFormSchema),
@@ -32,32 +31,34 @@ export default function ResumeAppPage() {
 
   return (
     <div className="eco">
-      <div className="eco-shell">
-        <div className="eco-container">
-          <header className="eco-header">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <LeafIcon width={24} height={24} />
-              <div>
-                <div className="eco-title">AI 履歴書・職務経歴書ジェネレーター</div>
-                <div className="eco-sub">RHF + Zod / Gemini / PDF（Puppeteer）</div>
+      <OverlayProvider>
+        <div className="eco-shell">
+          <div className="eco-container">
+            <header className="eco-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <LeafIcon width={24} height={24} />
+                <div>
+                  <div className="eco-title">AI 履歴書・職務経歴書ジェネレーター</div>
+                  <div className="eco-sub">RHF + Zod / Gemini / PDF（Puppeteer）</div>
+                </div>
+                <div style={{ marginLeft: 'auto' }}>
+                  <SunIcon width={22} height={22} />
+                </div>
               </div>
-              <div style={{ marginLeft: 'auto' }}>
-                <SunIcon width={22} height={22} />
-              </div>
-            </div>
-          </header>
+            </header>
 
-          <main style={{ marginTop: 16 }}>
-            <FormProvider {...methods}>
-              {view === 'form' ? (
-                <FormSection onSubmit={onSubmit} />
-              ) : finalData ? (
-                <ResultSection formData={finalData} onBack={() => setView('form')} />
-              ) : null}
-            </FormProvider>
-          </main>
+            <main style={{ marginTop: 16 }}>
+              <FormProvider {...methods}>
+                {view === 'form' ? (
+                  <FormSection onSubmit={onSubmit} />
+                ) : finalData ? (
+                  <ResultSection formData={finalData} onBack={() => setView('form')} />
+                ) : null}
+              </FormProvider>
+            </main>
+          </div>
         </div>
-      </div>
+      </OverlayProvider>
     </div>
   );
 }

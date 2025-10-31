@@ -1,12 +1,15 @@
 'use client';
 import { useState } from 'react';
 import type { ResumeFormData } from '@/lib/schema';
+import { useOverlay } from './OverlayProvider';
 
 export default function ResultSection({ formData, onBack }: { formData: ResumeFormData; onBack: ()=>void }) {
   const [loading, setLoading] = useState<'resume'|'cv'|null>(null);
+  const overlay = useOverlay();
   const gen = async (doc: 'resume'|'cv') => {
     setLoading(doc);
     try {
+      overlay.show('PDFを生成中です…');
       const res = await fetch('/api/generate-pdf', {
         method: 'POST',
         headers: { 'Content-Type':'application/json' },
@@ -22,6 +25,7 @@ export default function ResultSection({ formData, onBack }: { formData: ResumeFo
       alert(error instanceof Error ? error.message : 'PDFエラー');
     } finally {
       setLoading(null);
+      overlay.hide();
     }
   };
   return (

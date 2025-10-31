@@ -2,11 +2,13 @@
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import SunIcon from './icons/Sun';
+import { useOverlay } from './OverlayProvider';
 
 export default function AiResumePr() {
   const { register, getValues, setValue } = useFormContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const overlay = useOverlay();
 
   const handleGenerate = async () => {
     setLoading(true); setError(null);
@@ -24,6 +26,7 @@ export default function AiResumePr() {
       `Q5: ${qs[4] ?? ''}`,
     ].join('\n');
     try {
+      overlay.show('AIが自己PRを生成中です…');
       const res = await fetch('/api/generate-ai', { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ prompt }) });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'AI生成に失敗しました');
@@ -32,6 +35,7 @@ export default function AiResumePr() {
       setError(error instanceof Error ? error.message : 'AIエラー');
     } finally {
       setLoading(false);
+      overlay.hide();
     }
   };
 
