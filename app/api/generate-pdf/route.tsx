@@ -20,7 +20,7 @@ async function launchBrowser() {
     });
   } else {
     const puppeteer = await import('puppeteer');
-    return puppeteer.launch({ headless: 'new' });
+    return puppeteer.launch({ headless: true });
   }
 }
 
