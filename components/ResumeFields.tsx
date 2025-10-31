@@ -1,6 +1,7 @@
 'use client';
 import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
+import type { FieldError as RHFFieldError, FieldErrorsImpl, Merge } from 'react-hook-form';
 import PhotoUpload from './PhotoUpload';
 import DynamicHistoryFields from './DynamicHistoryFields';
 import AiResumePr from './AiResumePr';
@@ -32,12 +33,12 @@ export default function ResumeFields() {
           <div className="eco-col">
             <label className="eco-label">氏名</label>
             <input {...register('name')} />
-            <FieldError msg={errors.name?.message} />
+            <FieldError error={errors.name} />
           </div>
           <div className="eco-col">
             <label className="eco-label">ふりがな</label>
             <input {...register('name_furigana')} />
-            <FieldError msg={errors.name_furigana?.message} />
+            <FieldError error={errors.name_furigana} />
           </div>
           <div className="eco-col">
             <label className="eco-label">生年月日（年/月/日）</label>
@@ -46,7 +47,7 @@ export default function ResumeFields() {
               <input placeholder="MM" {...register('birth_month')} style={{ width:80 }} />
               <input placeholder="DD" {...register('birth_day')} style={{ width:80 }} />
             </div>
-            <FieldError msg={errors.birth_year?.message || errors.birth_month?.message || errors.birth_day?.message} />
+            <FieldError error={errors.birth_year || errors.birth_month || errors.birth_day} />
           </div>
           <div className="eco-col">
             <label className="eco-label">性別</label>
@@ -71,27 +72,27 @@ export default function ResumeFields() {
           <div className="eco-col">
             <label className="eco-label">郵便番号</label>
             <input {...register('address_postal_code')} />
-            <FieldError msg={errors.address_postal_code?.message} />
+            <FieldError error={errors.address_postal_code} />
           </div>
           <div className="eco-col">
             <label className="eco-label">住所</label>
             <input {...register('address_main')} />
-            <FieldError msg={errors.address_main?.message} />
+            <FieldError error={errors.address_main} />
           </div>
           <div className="eco-col">
             <label className="eco-label">ふりがな</label>
             <input {...register('address_furigana')} />
-            <FieldError msg={errors.address_furigana?.message} />
+            <FieldError error={errors.address_furigana} />
           </div>
           <div className="eco-col">
             <label className="eco-label">電話番号</label>
             <input {...register('phone')} />
-            <FieldError msg={errors.phone?.message} />
+            <FieldError error={errors.phone} />
           </div>
           <div className="eco-col">
             <label className="eco-label">メール</label>
             <input {...register('email')} />
-            <FieldError msg={errors.email?.message} />
+            <FieldError error={errors.email} />
           </div>
         </div>
         <div style={{ marginTop: 8 }}>
@@ -103,11 +104,31 @@ export default function ResumeFields() {
           <div style={{ marginTop: 12, display: 'grid', gap: 8 }}>
             <h4 style={{ margin: 0 }}>連絡先</h4>
             <div className="eco-grid2">
-              <div className="eco-col"><label className="eco-label">郵便番号</label><input {...register('contact_address_postal_code')} /></div>
-              <div className="eco-col"><label className="eco-label">住所</label><input {...register('contact_address_main')} /></div>
-              <div className="eco-col"><label className="eco-label">ふりがな</label><input {...register('contact_address_furigana')} /></div>
-              <div className="eco-col"><label className="eco-label">電話番号</label><input {...register('contact_phone')} /></div>
-              <div className="eco-col"><label className="eco-label">メール</label><input {...register('contact_email')} /></div>
+              <div className="eco-col">
+                <label className="eco-label">郵便番号</label>
+                <input {...register('contact_address_postal_code')} />
+                <FieldError error={errors.contact_address_postal_code} />
+              </div>
+              <div className="eco-col">
+                <label className="eco-label">住所</label>
+                <input {...register('contact_address_main')} />
+                <FieldError error={errors.contact_address_main} />
+              </div>
+              <div className="eco-col">
+                <label className="eco-label">ふりがな</label>
+                <input {...register('contact_address_furigana')} />
+                <FieldError error={errors.contact_address_furigana} />
+              </div>
+              <div className="eco-col">
+                <label className="eco-label">電話番号</label>
+                <input {...register('contact_phone')} />
+                <FieldError error={errors.contact_phone} />
+              </div>
+              <div className="eco-col">
+                <label className="eco-label">メール</label>
+                <input {...register('contact_email')} />
+                <FieldError error={errors.contact_email} />
+              </div>
             </div>
           </div>
         )}
@@ -140,7 +161,27 @@ export default function ResumeFields() {
   );
 }
 
-function FieldError({ msg }: { msg?: string }) {
-  if (!msg) return null;
-  return <p style={{ color: '#8d2f2f', margin: 0 }}>{msg}</p>;
+type ErrorLike =
+  | string
+  | RHFFieldError
+  | FieldErrorsImpl<any>
+  | Merge<RHFFieldError, FieldErrorsImpl<any>>
+  | undefined;
+
+function FieldError({ error }: { error?: ErrorLike }) {
+  const message = extractMessage(error);
+  if (!message) return null;
+  return <p style={{ color: '#8d2f2f', margin: 0 }}>{message}</p>;
+}
+
+function extractMessage(error?: ErrorLike): string | undefined {
+  if (!error) return undefined;
+  if (typeof error === 'string') return error;
+  if (typeof (error as RHFFieldError).message === 'string') {
+    return (error as RHFFieldError).message;
+  }
+  if (typeof (error as { message?: unknown }).message === 'string') {
+    return (error as { message?: string }).message;
+  }
+  return undefined;
 }
