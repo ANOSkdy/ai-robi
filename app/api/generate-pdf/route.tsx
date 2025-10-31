@@ -3,9 +3,8 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 import { NextRequest, NextResponse } from 'next/server';
-import { renderToStaticMarkup } from 'react-dom/server';
-import ResumePdfTemplate from '@/components/pdf/ResumePdfTemplate';
-import CvPdfTemplate from '@/components/pdf/CvPdfTemplate';
+import { renderResumePdf } from '@/components/pdf/ResumePdfTemplate';
+import { renderCvPdf } from '@/components/pdf/CvPdfTemplate';
 import type { ResumeFormData } from '@/lib/schema';
 
 async function launchBrowser() {
@@ -40,12 +39,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'documentType が不正' }, { status: 400 });
   }
 
-  const element = documentType === 'resume'
-    ? <ResumePdfTemplate data={formData} />
-    : <CvPdfTemplate data={formData} />;
-
   try {
-    const html = '<!doctype html>' + renderToStaticMarkup(element);
+    const html = documentType === 'resume'
+      ? renderResumePdf(formData)
+      : renderCvPdf(formData);
 
     const browser = await launchBrowser();
     const page = await browser.newPage();
