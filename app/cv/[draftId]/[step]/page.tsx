@@ -16,6 +16,21 @@ import {
   type CvPayload,
 } from '@/lib/schemas/cv';
 
+const getValueFromPath = (values: unknown, path: string): unknown => {
+  if (!values) return undefined;
+  return path.split('.').reduce<unknown>((acc, segment) => {
+    if (acc === null || acc === undefined) return undefined;
+    if (Array.isArray(acc)) {
+      const index = Number(segment);
+      if (Number.isNaN(index)) {
+        return (acc as unknown as Record<string, unknown>)[segment];
+      }
+      return acc[index];
+    }
+    return (acc as Record<string, unknown>)[segment];
+  }, values);
+};
+
 const stepDefinitions = [
   {
     id: 'basic',
@@ -130,17 +145,33 @@ export default function CvWizardStepPage() {
     router.push(`/cv/${draftId}/${nextStep.id}`);
   };
 
-  const handleNext = async () => {
-    if (currentStep.fields.length > 0) {
-      const valid = await methods.trigger(currentStep.fields as Parameters<typeof methods.trigger>[0], {
-        shouldFocus: true,
-      });
-      if (!valid) {
-        return;
-      }
+  const watchedValues = useWatch<CvPayload>();
+
+  const isCurrentStepValid = useMemo(() => {
+    if (currentStep.fields.length === 0) {
+      return true;
     }
-    navigate(1);
-  };
+
+    const hasErrors = currentStep.fields.some((field) => methods.getFieldState(field).invalid);
+    if (hasErrors) {
+      return false;
+    }
+
+    return currentStep.fields.every((field) => {
+      const value = getValueFromPath(watchedValues, field);
+      if (typeof value === 'string') {
+        return value.trim().length > 0;
+      }
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      return value !== undefined && value !== null;
+    });
+  }, [currentStep.fields, methods, watchedValues]);
+
+  const nextStep = stepDefinitions[stepIndex + 1];
+  const nextHref = nextStep ? `/cv/${draftId}/${nextStep.id}` : undefined;
+  const canProceedToNext = Boolean(nextHref) && isCurrentStepValid;
 
   const handleSubmitAll = () => {
     startTransition(async () => {
@@ -169,8 +200,8 @@ export default function CvWizardStepPage() {
       <div className="h-20" />
       <StepFooter
         onBack={() => navigate(-1)}
-        onNext={currentStep.id === 'preview' ? undefined : handleNext}
-        nextDisabled={currentStep.id === 'preview'}
+        nextHref={currentStep.id === 'preview' ? undefined : canProceedToNext ? nextHref : undefined}
+        nextDisabled={currentStep.id === 'preview' || !canProceedToNext}
         hideNextButton={currentStep.id === 'preview'}
         savingState={savingState}
       />
