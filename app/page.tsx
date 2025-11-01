@@ -64,18 +64,18 @@ export default function HomePage() {
   return (
     <div className="mx-auto grid w-full max-w-screen-md gap-14 px-4 sm:px-6">
       <div className="relative text-center">
-        <span className="leaf-clip-a absolute -left-12 top-4 h-16 w-16 bg-brand-earth1/20" aria-hidden />
-        <span className="leaf-clip-b absolute -right-10 bottom-2 h-12 w-12 bg-brand-green2/20" aria-hidden />
-        <p className="inline-flex items-center gap-2 rounded-full border border-brand-green2/40 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-brand-green1">
+        <span className="leaf-clip-a absolute -left-12 top-4 h-16 w-16 bg-accent-1/20" aria-hidden />
+        <span className="leaf-clip-b absolute -right-10 bottom-2 h-12 w-12 bg-secondary/20" aria-hidden />
+        <p className="inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-primary">
           自然派ワークフロー
         </p>
-        <h1 className="mt-6 text-[clamp(2.25rem,6vw,3rem)] font-semibold tracking-tight text-brand-green1">
+        <h1 className="mt-6 text-[clamp(2.25rem,6vw,3rem)] font-semibold tracking-tight text-primary">
           有機的なリズムで履歴書と職務経歴書を仕上げる
         </h1>
-        <p className="mt-4 text-base leading-relaxed text-brand-earth2/90">
+        <p className="mt-4 text-base leading-relaxed text-accent-2/90">
           グリーンとアースのパレット、紙質のテクスチャ、手書きの区切りをまとったウィザードで、応募書類づくりを心地よくサポートします。
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-brand-green1">
+        <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-primary">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2">
             <SunIcon width={16} height={16} aria-hidden />
             フォーカスリングとコントラストの最適化
@@ -95,7 +95,7 @@ export default function HomePage() {
         ))}
       </div>
 
-      <p className="text-center text-sm text-brand-earth2/80">
+      <p className="text-center text-sm text-accent-2/80">
         以前のダッシュボード体験は <strong>LegacyHomeExperience</strong> コンポーネントとして残してあります。
       </p>
     </div>

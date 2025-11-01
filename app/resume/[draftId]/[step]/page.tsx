@@ -10,6 +10,21 @@ import StepFooter from '@/components/wizard/StepFooter';
 import { getDraft, saveDraft, submitDraft } from '@/app/actions/drafts';
 import { resumePayloadSchema, type ResumePayload } from '@/lib/schemas/resume';
 
+const getValueFromPath = (values: unknown, path: string): unknown => {
+  if (!values) return undefined;
+  return path.split('.').reduce<unknown>((acc, segment) => {
+    if (acc === null || acc === undefined) return undefined;
+    if (Array.isArray(acc)) {
+      const index = Number(segment);
+      if (Number.isNaN(index)) {
+        return (acc as unknown as Record<string, unknown>)[segment];
+      }
+      return acc[index];
+    }
+    return (acc as Record<string, unknown>)[segment];
+  }, values);
+};
+
 const stepDefinitions = [
   {
     id: 'summary',
@@ -129,17 +144,33 @@ export default function ResumeWizardStepPage() {
     router.push(`/resume/${draftId}/${nextStep.id}`);
   };
 
-  const handleNext = async () => {
-    if (currentStep.fields.length > 0) {
-      const valid = await methods.trigger(currentStep.fields as Parameters<typeof methods.trigger>[0], {
-        shouldFocus: true,
-      });
-      if (!valid) {
-        return;
-      }
+  const watchedValues = useWatch<ResumeFormValues>();
+
+  const isCurrentStepValid = useMemo(() => {
+    if (currentStep.fields.length === 0) {
+      return true;
     }
-    navigate(1);
-  };
+
+    const hasErrors = currentStep.fields.some((field) => methods.getFieldState(field).invalid);
+    if (hasErrors) {
+      return false;
+    }
+
+    return currentStep.fields.every((field) => {
+      const value = getValueFromPath(watchedValues, field);
+      if (typeof value === 'string') {
+        return value.trim().length > 0;
+      }
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      return value !== undefined && value !== null;
+    });
+  }, [currentStep.fields, methods, watchedValues]);
+
+  const nextStep = stepDefinitions[stepIndex + 1];
+  const nextHref = nextStep ? `/resume/${draftId}/${nextStep.id}` : undefined;
+  const canProceedToNext = Boolean(nextHref) && isCurrentStepValid;
 
   const handleSubmitAll = () => {
     startTransition(async () => {
@@ -155,8 +186,8 @@ export default function ResumeWizardStepPage() {
       <div className="space-y-4">
         <ProgressBar current={stepIndex + 1} total={totalSteps} />
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold">{currentStep.title}</h2>
-          <p className="text-sm text-gray-500">{currentStep.description}</p>
+          <h2 className="text-lg font-semibold text-[color:rgb(var(--fg))]">{currentStep.title}</h2>
+          <p className="text-sm text-[color:rgb(var(--muted-fg))]">{currentStep.description}</p>
         </div>
         {currentStep.id === 'summary' && <SummaryStep />}
         {currentStep.id === 'skills' && <SkillsStep />}
@@ -168,8 +199,8 @@ export default function ResumeWizardStepPage() {
       <div className="h-20" />
       <StepFooter
         onBack={() => navigate(-1)}
-        onNext={currentStep.id === 'preview' ? undefined : handleNext}
-        nextDisabled={currentStep.id === 'preview'}
+        nextHref={currentStep.id === 'preview' ? undefined : canProceedToNext ? nextHref : undefined}
+        nextDisabled={currentStep.id === 'preview' || !canProceedToNext}
         hideNextButton={currentStep.id === 'preview'}
         savingState={savingState}
       />
@@ -180,7 +211,7 @@ export default function ResumeWizardStepPage() {
 function Field({ label, children, error }: { label: string; children: ReactNode; error?: unknown }) {
   return (
     <label className="block space-y-1 text-sm">
-      <span className="font-medium text-gray-700">{label}</span>
+      <span className="font-medium text-[color:rgb(var(--fg))]">{label}</span>
       {children}
       {error ? (
         <span className="text-xs text-red-600">{String((error as { message?: string })?.message ?? error)}</span>
@@ -219,7 +250,7 @@ function SkillsStep() {
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-gray-500">複数スキル対応は次フェーズで拡張予定です。</p>
+      <p className="text-xs text-[color:rgb(var(--muted-fg))]">複数スキル対応は次フェーズで拡張予定です。</p>
       <Field label="スキル名" error={skillError?.name}>
         <input className="w-full rounded border px-3 py-2" {...register('skills.0.name')} />
       </Field>
@@ -289,8 +320,8 @@ function ResumePreviewStep({
           {(values.skills && values.skills.length > 0 ? values.skills : [{}]).map((skill, index) => (
             <div key={index} className="rounded border border-dashed p-3">
               <div className="font-medium">{skill?.name || '未入力'}</div>
-              <div className="text-xs text-gray-500">{skill?.level || 'レベル未入力'}</div>
-              <p className="text-xs text-gray-500">{skill?.description || '補足なし'}</p>
+              <div className="text-xs text-[color:rgb(var(--muted-fg))]">{skill?.level || 'レベル未入力'}</div>
+              <p className="text-xs text-[color:rgb(var(--muted-fg))]">{skill?.description || '補足なし'}</p>
             </div>
           ))}
         </div>
@@ -302,11 +333,11 @@ function ResumePreviewStep({
           {(values.history && values.history.length > 0 ? values.history : [{}]).map((item, index) => (
             <div key={index} className="rounded border border-dashed p-3">
               <div className="font-medium">{item?.company || '未入力'}</div>
-              <div className="text-xs text-gray-500">{item?.role || '役職未入力'}</div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-[color:rgb(var(--muted-fg))]">{item?.role || '役職未入力'}</div>
+              <div className="text-xs text-[color:rgb(var(--muted-fg))]">
                 {item?.start || '-'} ~ {item?.end || '-'}
               </div>
-              <p className="text-xs text-gray-500 whitespace-pre-wrap">{item?.detail || '詳細未入力'}</p>
+              <p className="text-xs text-[color:rgb(var(--muted-fg))] whitespace-pre-wrap">{item?.detail || '詳細未入力'}</p>
             </div>
           ))}
         </div>
@@ -317,12 +348,12 @@ function ResumePreviewStep({
           type="button"
           onClick={onSubmitAll}
           disabled={submitting}
-          className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[color:var(--color-accent-3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-accent-1)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {submitting ? '送信中…' : 'ドラフトを送信'}
         </button>
       </div>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-[color:rgb(var(--muted-fg))]">
         送信するとステータスが <code>submitted</code> になり、プレビューが更新されます。（ID: {draftId}）
       </p>
     </div>

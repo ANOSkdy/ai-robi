@@ -18,7 +18,7 @@ export default async function CvDraftLayout({
     <div className="mx-auto max-w-3xl space-y-4 p-4 pb-24">
       <header>
         <h1 className="text-xl font-semibold">{title}</h1>
-        <p className="text-sm text-gray-500">ドラフトID: {resolvedParams.draftId}</p>
+        <p className="text-sm text-[color:rgb(var(--muted-fg))]">ドラフトID: {resolvedParams.draftId}</p>
       </header>
       {children}
     </div>

@@ -142,7 +142,7 @@ export default function ResumeWizardPage() {
       >
         <step.component submitted={submitted} values={values} />
         {submitted && currentStep === resumeSteps.length - 1 ? (
-          <p className="rounded-3xl border border-brand-green2/30 bg-white/80 px-6 py-4 text-sm text-brand-green1">
+          <p className="rounded-3xl border border-secondary/30 bg-white/80 px-6 py-4 text-sm text-primary">
             自然な書類づくりの準備が整いました。PDF 出力や保存フローは今後のアップデートでお届けします。
           </p>
         ) : null}
@@ -330,7 +330,7 @@ function SkillsStep({ values, submitted }: StepProps) {
 function ConfirmationStep({ values }: StepProps) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 rounded-[2rem] border border-brand-green2/30 bg-white/80 p-6 text-sm text-brand-green1">
+      <div className="grid gap-4 rounded-[2rem] border border-secondary/30 bg-white/80 p-6 text-sm text-primary">
         <DetailRow label="氏名" value={values.name} />
         <DetailRow label="ふりがな" value={values.nameFurigana} />
         <DetailRow label="メール" value={values.email} />
@@ -338,7 +338,7 @@ function ConfirmationStep({ values }: StepProps) {
         <DetailRow label="生年月日" value={`${values.birthYear}年 ${values.birthMonth}月 ${values.birthDay}日`} />
         <DetailRow label="住所" value={values.address} />
       </div>
-      <div className="space-y-4 rounded-[2rem] border border-brand-earth1/30 bg-white/70 p-6 text-sm text-brand-green1">
+      <div className="space-y-4 rounded-[2rem] border border-accent-1/30 bg-white/70 p-6 text-sm text-primary">
         <DetailRow label="学歴" value={values.educationSummary} />
         {values.educationHighlights ? <DetailRow label="学びのハイライト" value={values.educationHighlights} /> : null}
         <DetailRow label="資格・免許" value={values.certifications} />
@@ -364,7 +364,7 @@ function Field({
   const message = extractErrorMessage(error);
   return (
     <label className={classes}>
-      <span className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-green1">{label}</span>
+      <span className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">{label}</span>
       {children}
       {message ? <span className="validation-text">{message}</span> : null}
     </label>
@@ -374,8 +374,8 @@ function Field({
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1">
-      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-earth2">{label}</span>
-      <p className="rounded-2xl bg-white/70 px-4 py-3 text-brand-green1">{value || '---'}</p>
+      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-2">{label}</span>
+      <p className="rounded-2xl bg-white/70 px-4 py-3 text-primary">{value || '---'}</p>
     </div>
   );
 }
