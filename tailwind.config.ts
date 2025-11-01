@@ -1,12 +1,28 @@
 import type { Config } from 'tailwindcss';
 
-const config: Config = {
+type ExtendedConfig = Config & {
+  safelist?: string[];
+};
+
+const config: ExtendedConfig = {
   content: [
     './app/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
     './lib/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
     './templates/**/*.{ts,tsx}',
+  ],
+  safelist: [
+    'bg-primary',
+    'text-primary',
+    'bg-secondary',
+    'text-secondary',
+    'bg-accent1',
+    'bg-accent2',
+    'bg-accent3',
+    'text-accent1',
+    'text-accent2',
+    'text-accent3',
   ],
   theme: {
     extend: {

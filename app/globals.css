@@ -34,6 +34,28 @@ html {
 .bg-brand-light { background-color: rgb(var(--brand-light)); }
 
 @layer base {
+  :root {
+    /* 新パレット（既存があれば上書きせず確認） */
+    --color-base: #F9F9F9;
+    --color-primary: #4A90E2;
+    --color-secondary: #50E3C2;
+    --color-accent-1: #FFD166;
+    --color-accent-2: #F25F5C;
+    --color-accent-3: #9D59EC;
+
+    /* 旧トークンを新に橋渡し（数値は rgb 用） */
+    --brand-light: 249 249 249;
+    --bg: 249 249 249;
+    --fg: 33 37 41;
+    --muted-fg: 109 117 125;
+    --border: 218 222 227;
+    --brand-earth1: 74 144 226;
+
+    /* 緑味のある影を中立へ */
+    --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-strong: 0 30px 80px -40px rgba(0, 0, 0, 0.28);
+  }
+
   *,
   *::before,
   *::after {
