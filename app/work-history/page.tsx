@@ -142,7 +142,7 @@ export default function WorkHistoryWizardPage() {
       >
         <step.component submitted={submitted} values={values} />
         {submitted && currentStep === steps.length - 1 ? (
-          <p className="rounded-3xl border border-brand-earth1/40 bg-white/85 px-6 py-4 text-sm text-brand-green1">
+          <p className="rounded-3xl border border-accent-1/40 bg-white/85 px-6 py-4 text-sm text-primary">
             職務経歴の骨組みが完成しました。仕上げのフォーマット出力はこれからのリリースでご案内します。
           </p>
         ) : null}
@@ -230,10 +230,10 @@ function ExperiencesStep({ submitted, values }: StepProps) {
         return (
           <div
             key={field.id}
-            className="space-y-4 rounded-[2.5rem] border border-brand-green2/25 bg-white/80 p-6 shadow-inner"
+            className="space-y-4 rounded-[2.5rem] border border-secondary/25 bg-white/80 p-6 shadow-inner"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-brand-green1">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">
                 経歴 {index + 1}
               </h3>
               {fields.length > 1 ? (
@@ -353,28 +353,28 @@ function AchievementsStep({ values, submitted }: StepProps) {
 
 function ConfirmationStep({ values }: StepProps) {
   return (
-    <div className="space-y-6 text-sm text-brand-green1">
-      <div className="rounded-[2.5rem] border border-brand-green2/30 bg-white/80 p-6">
+    <div className="space-y-6 text-sm text-primary">
+      <div className="rounded-[2.5rem] border border-secondary/30 bg-white/80 p-6">
         <Detail label="氏名" value={values.fullName} />
         <Detail label="肩書き" value={values.professionalTitle} />
         <Detail label="メール" value={values.email} />
         <Detail label="電話" value={values.phone} />
         <Detail label="プロフィール概要" value={values.introduction} />
       </div>
-      <div className="space-y-4 rounded-[2.5rem] border border-brand-earth1/30 bg-white/75 p-6">
+      <div className="space-y-4 rounded-[2.5rem] border border-accent-1/30 bg-white/75 p-6">
         {values.experiences.map((exp, index) => (
           <div key={`${exp.company}-${index}`} className="space-y-2 rounded-2xl bg-white/70 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-earth2">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-2">
               {exp.company} / {exp.role}
             </p>
-            <p className="text-xs text-brand-earth2/80">
+            <p className="text-xs text-accent-2/80">
               {exp.start} 〜 {exp.end}
             </p>
             <p>{exp.achievements}</p>
           </div>
         ))}
       </div>
-      <div className="space-y-4 rounded-[2.5rem] border border-brand-green2/30 bg-white/75 p-6">
+      <div className="space-y-4 rounded-[2.5rem] border border-secondary/30 bg-white/75 p-6">
         <Detail label="代表的な実績" value={values.achievements} />
         <Detail label="スキル" value={values.skills} />
         <Detail label="自己PR" value={values.summary} />
@@ -398,7 +398,7 @@ function Field({
   const message = extractErrorMessage(error);
   return (
     <label className={classes}>
-      <span className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-green1">{label}</span>
+      <span className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">{label}</span>
       {children}
       {message ? <span className="validation-text">{message}</span> : null}
     </label>
@@ -408,8 +408,8 @@ function Field({
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1">
-      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-earth2">{label}</span>
-      <p className="rounded-2xl bg-white/70 px-4 py-3 text-brand-green1">{value || '---'}</p>
+      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-2">{label}</span>
+      <p className="rounded-2xl bg-white/70 px-4 py-3 text-primary">{value || '---'}</p>
     </div>
   );
 }

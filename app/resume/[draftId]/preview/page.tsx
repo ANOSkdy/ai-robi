@@ -9,8 +9,8 @@ export default async function ResumePreviewPage({ params }: { params: { draftId:
     return (
       <div className="space-y-4 p-4">
         <h1 className="text-xl font-semibold">ドラフトが見つかりません</h1>
-        <p className="text-sm text-gray-500">ドラフトID {params.draftId} は存在しません。新しく作成してください。</p>
-        <Link className="text-sm text-blue-600 underline" href="/resume/new">
+        <p className="text-sm text-[color:rgb(var(--muted-fg))]">ドラフトID {params.draftId} は存在しません。新しく作成してください。</p>
+        <Link className="text-sm text-primary underline" href="/resume/new">
           新規で作成する
         </Link>
       </div>
@@ -28,7 +28,7 @@ export default async function ResumePreviewPage({ params }: { params: { draftId:
     <div className="space-y-6">
       <header className="space-y-1">
         <h1 className="text-xl font-semibold">職務経歴書プレビュー</h1>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[color:rgb(var(--muted-fg))]">
           ステータス: {statusLabel}・最終更新: {new Date(draft.updatedAt).toLocaleString('ja-JP')}
         </p>
       </header>
@@ -42,13 +42,13 @@ export default async function ResumePreviewPage({ params }: { params: { draftId:
         <h2 className="text-base font-semibold">スキル</h2>
         <div className="space-y-2 text-sm">
           {skillItems.length === 0 ? (
-            <div className="rounded border border-dashed p-3 text-gray-500">スキルはまだ入力されていません。</div>
+            <div className="rounded border border-dashed p-3 text-[color:rgb(var(--muted-fg))]">スキルはまだ入力されていません。</div>
           ) : (
             skillItems.map((skill, index) => (
               <div key={index} className="rounded border border-dashed p-3">
                 <div className="font-medium">{skill.name ?? '未入力'}</div>
-                <div className="text-xs text-gray-500">{skill.level ?? 'レベル未入力'}</div>
-                <p className="text-xs text-gray-500">{skill.description ?? '補足なし'}</p>
+                <div className="text-xs text-[color:rgb(var(--muted-fg))]">{skill.level ?? 'レベル未入力'}</div>
+                <p className="text-xs text-[color:rgb(var(--muted-fg))]">{skill.description ?? '補足なし'}</p>
               </div>
             ))
           )}
@@ -59,16 +59,16 @@ export default async function ResumePreviewPage({ params }: { params: { draftId:
         <h2 className="text-base font-semibold">職歴</h2>
         <div className="space-y-2 text-sm">
           {historyItems.length === 0 ? (
-            <div className="rounded border border-dashed p-3 text-gray-500">職歴はまだ入力されていません。</div>
+            <div className="rounded border border-dashed p-3 text-[color:rgb(var(--muted-fg))]">職歴はまだ入力されていません。</div>
           ) : (
             historyItems.map((item, index) => (
               <div key={index} className="rounded border border-dashed p-3">
                 <div className="font-medium">{item.company ?? '未入力'}</div>
-                <div className="text-xs text-gray-500">{item.role ?? '役職未入力'}</div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-[color:rgb(var(--muted-fg))]">{item.role ?? '役職未入力'}</div>
+                <div className="text-xs text-[color:rgb(var(--muted-fg))]">
                   {item.start ?? '-'} ~ {item.end ?? '-'}
                 </div>
-                <p className="text-xs text-gray-500 whitespace-pre-wrap">{item.detail ?? '詳細未入力'}</p>
+                <p className="text-xs text-[color:rgb(var(--muted-fg))] whitespace-pre-wrap">{item.detail ?? '詳細未入力'}</p>
               </div>
             ))
           )}
@@ -76,10 +76,10 @@ export default async function ResumePreviewPage({ params }: { params: { draftId:
       </section>
 
       <footer className="flex items-center justify-between">
-        <Link className="text-sm text-blue-600 underline" href={`/resume/${params.draftId}/summary`}>
+        <Link className="text-sm text-primary underline" href={`/resume/${params.draftId}/summary`}>
           編集に戻る
         </Link>
-        <Link className="text-sm text-blue-600 underline" href="/resume/new">
+        <Link className="text-sm text-primary underline" href="/resume/new">
           新しいドラフトを作成
         </Link>
       </footer>

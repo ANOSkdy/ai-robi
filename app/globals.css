@@ -6,24 +6,19 @@
 @import '../styles/design-tokens.css';
 
 :root {
-  --brand-green1: 27 81 45;
-  --brand-green2: 127 176 105;
-  --brand-earth1: 230 170 104;
-  --brand-earth2: 166 116 88;
+  /* RGB 形式は Tailwind の rgb(var(--token)) で再利用する */
+  --brand-green1: 74 144 226; /* = var(--color-primary) */
+  --brand-green2: 80 227 194; /* = var(--color-secondary) */
+  --brand-earth1: 255 209 102; /* = var(--color-accent-1) */
+  --brand-earth2: 242 95 92; /* = var(--color-accent-2) */
   --brand-light: 249 249 249;
   --bg: 249 249 249;
-  --fg: 33 37 41;
-  --muted-fg: 109 117 125;
-  --border: 218 222 227;
+  --fg: 28 31 36;
+  --muted-fg: 94 105 123;
+  --border: 214 219 226;
   --ring: var(--color-accent-1);
   --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.08);
-  --shadow-strong: 0 30px 80px -40px rgba(27, 81, 45, 0.28);
-  --color-base: #F9F9F9;
-  --color-primary: #4A90E2;
-  --color-secondary: #50E3C2;
-  --color-accent-1: #FFD166;
-  --color-accent-2: #F25F5C;
-  --color-accent-3: #9D59EC;
+  --shadow-strong: 0 30px 80px -40px rgba(74, 144, 226, 0.24);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -58,18 +53,18 @@ html {
   body {
     min-height: 100vh;
     background:
-      radial-gradient(1200px 620px at 120% -10%, rgba(127, 176, 105, 0.16) 0%, transparent 65%),
-      radial-gradient(880px 540px at -20% 5%, rgba(230, 170, 104, 0.18) 0%, transparent 70%),
-      linear-gradient(135deg, rgba(243, 249, 227, 1) 0%, rgba(243, 249, 227, 0.92) 100%);
+      radial-gradient(1200px 620px at 120% -10%, rgba(var(--brand-green2) / 0.16) 0%, transparent 65%),
+      radial-gradient(880px 540px at -20% 5%, rgba(var(--brand-earth1) / 0.18) 0%, transparent 70%),
+      linear-gradient(135deg, rgba(249, 249, 249, 1) 0%, rgba(249, 249, 249, 0.92) 100%);
     background-color: var(--color-base);
     color: rgb(var(--fg));
     -webkit-tap-highlight-color: transparent;
   }
   a {
-    color: rgb(var(--brand-green2));
+    color: var(--color-primary);
   }
   a:hover {
-    color: rgb(var(--brand-green1));
+    color: var(--color-accent-3);
   }
 }
 
@@ -99,7 +94,7 @@ html {
     border-radius: 2rem;
     background: rgba(255, 255, 255, 0.86);
     box-shadow: var(--shadow-soft);
-    border: 1px solid rgba(27, 81, 45, 0.08);
+    border: 1px solid rgba(var(--brand-green1) / 0.12);
   }
 
   .btn {
@@ -124,19 +119,19 @@ html {
     pointer-events: none;
   }
   .btn-primary {
-    background-color: rgb(var(--brand-green2));
-    color: #0f2e1b;
-    border-color: rgba(27, 81, 45, 0.12);
-    box-shadow: 0 12px 24px -16px rgba(27, 81, 45, 0.35);
+    background-color: var(--color-primary);
+    color: #ffffff;
+    border-color: rgba(var(--brand-green1) / 0.22);
+    box-shadow: 0 12px 32px -18px rgba(var(--brand-green1) / 0.45);
   }
   .btn-primary:hover {
     transform: translateY(-1px);
-    background-color: color-mix(in oklab, rgb(var(--brand-green2)) 88%, white 12%);
+    background-color: color-mix(in oklab, var(--color-primary) 86%, white 14%);
   }
   .btn-secondary {
     background: rgba(255, 255, 255, 0.72);
-    color: rgb(var(--brand-green1));
-    border-color: rgba(166, 116, 88, 0.28);
+    color: var(--color-primary);
+    border-color: rgba(var(--brand-earth2) / 0.28);
   }
   .btn-secondary:hover {
     transform: translateY(-1px);
@@ -148,7 +143,7 @@ html {
   background-color: rgb(var(--brand-light));
   background-image:
     radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.75) 0%, transparent 55%),
-    radial-gradient(circle at 80% 0%, rgba(127, 176, 105, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 0%, rgba(var(--brand-green2) / 0.12) 0%, transparent 50%),
     url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none"%3E%3Cpath d="M0 80 Q40 70 80 80 T160 80" stroke="%23d9e6d0" stroke-width="0.8" stroke-linecap="round"/%3E%3Cpath d="M80 0 Q70 40 80 80 T80 160" stroke="%23f2eadc" stroke-width="0.8" stroke-linecap="round"/%3E%3C/svg%3E');
   background-blend-mode: multiply;
 }
@@ -156,8 +151,8 @@ html {
 .bg-wood {
   background-color: #f0e6d6;
   background-image:
-    linear-gradient(145deg, rgba(166, 116, 88, 0.14) 0%, rgba(230, 170, 104, 0.12) 100%),
-    repeating-linear-gradient(0deg, rgba(166, 116, 88, 0.08), rgba(166, 116, 88, 0.08) 4px, rgba(243, 249, 227, 0.08) 4px, rgba(243, 249, 227, 0.08) 8px);
+    linear-gradient(145deg, rgba(var(--brand-earth2) / 0.18) 0%, rgba(var(--brand-earth1) / 0.16) 100%),
+    repeating-linear-gradient(0deg, rgba(var(--brand-earth2) / 0.1), rgba(var(--brand-earth2) / 0.1) 4px, rgba(249, 249, 249, 0.06) 4px, rgba(249, 249, 249, 0.06) 8px);
 }
 
 .leaf-clip-a {
@@ -176,8 +171,8 @@ html {
 .form-surface {
   background: rgba(255, 255, 255, 0.88);
   border-radius: 30px 38px 32px 34px / 34px 30px 38px 32px;
-  border: 1px solid rgba(27, 81, 45, 0.12);
-  box-shadow: 0 18px 40px -28px rgba(27, 81, 45, 0.35);
+  border: 1px solid rgba(var(--brand-green1) / 0.18);
+  box-shadow: 0 18px 40px -28px rgba(var(--brand-green1) / 0.35);
 }
 
 input.rounded-organic,
@@ -190,26 +185,26 @@ input.brand-field,
 textarea.brand-field,
 select.brand-field {
   background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(27, 81, 45, 0.18);
+  border: 1px solid rgba(var(--brand-green1) / 0.18);
   padding: 0.85rem 1rem;
   color: rgb(var(--fg));
   transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
-  box-shadow: inset 0 1px 2px rgba(27, 81, 45, 0.08);
+  box-shadow: inset 0 1px 2px rgba(var(--brand-green1) / 0.14);
 }
 
 input.brand-field:focus-visible,
 textarea.brand-field:focus-visible,
 select.brand-field:focus-visible {
   border-color: rgba(var(--ring) / 1);
-  box-shadow: 0 0 0 3px rgba(230, 170, 104, 0.35);
+  box-shadow: 0 0 0 3px rgba(var(--brand-earth1) / 0.35);
   outline: none;
 }
 
 input.brand-field[aria-invalid='true'],
 textarea.brand-field[aria-invalid='true'],
 select.brand-field[aria-invalid='true'] {
-  border-color: rgba(230, 100, 80, 0.7);
-  box-shadow: 0 0 0 2px rgba(230, 100, 80, 0.25);
+  border-color: rgba(var(--brand-earth2) / 0.75);
+  box-shadow: 0 0 0 2px rgba(var(--brand-earth2) / 0.35);
 }
 
 .validation-text {

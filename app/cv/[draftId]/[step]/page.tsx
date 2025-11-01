@@ -156,8 +156,8 @@ export default function CvWizardStepPage() {
       <div className="space-y-4">
         <ProgressBar current={stepIndex + 1} total={totalSteps} />
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold">{currentStep.title}</h2>
-          <p className="text-sm text-gray-500">{currentStep.description}</p>
+          <h2 className="text-lg font-semibold text-[color:rgb(var(--fg))]">{currentStep.title}</h2>
+          <p className="text-sm text-[color:rgb(var(--muted-fg))]">{currentStep.description}</p>
         </div>
         {currentStep.id === 'basic' && <BasicStep />}
         {currentStep.id === 'contact' && <ContactStep />}
@@ -181,7 +181,7 @@ export default function CvWizardStepPage() {
 function Field({ label, children, error }: { label: string; children: ReactNode; error?: unknown }) {
   return (
     <label className="block space-y-1 text-sm">
-      <span className="font-medium text-gray-700">{label}</span>
+      <span className="font-medium text-[color:rgb(var(--fg))]">{label}</span>
       {children}
       {error ? (
         <span className="text-xs text-red-600">{String((error as { message?: string })?.message ?? error)}</span>
@@ -242,7 +242,7 @@ function EducationStep() {
   const { register } = useFormContext<CvPayload>();
   return (
     <div className="space-y-3">
-      <p className="text-xs text-gray-500">シンプルな雛形です。繰り返し追加は次フェーズで拡張予定です。</p>
+      <p className="text-xs text-[color:rgb(var(--muted-fg))]">シンプルな雛形です。繰り返し追加は次フェーズで拡張予定です。</p>
       <Field label="学校名">
         <input className="w-full rounded border px-3 py-2" {...register('education.0.school')} />
       </Field>
@@ -280,15 +280,15 @@ function PreviewStep({
         </header>
         <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-gray-500">氏名</dt>
+            <dt className="text-[color:rgb(var(--muted-fg))]">氏名</dt>
             <dd>{values.basic?.lastName ?? '-'} {values.basic?.firstName ?? ''}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">ふりがな</dt>
+            <dt className="text-[color:rgb(var(--muted-fg))]">ふりがな</dt>
             <dd>{values.basic?.kana ?? '-'}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">生年月日</dt>
+            <dt className="text-[color:rgb(var(--muted-fg))]">生年月日</dt>
             <dd>{values.basic?.birthDate ?? '-'}</dd>
           </div>
         </dl>
@@ -300,19 +300,19 @@ function PreviewStep({
         </header>
         <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-gray-500">郵便番号</dt>
+            <dt className="text-[color:rgb(var(--muted-fg))]">郵便番号</dt>
             <dd>{values.contact?.postalCode ?? '-'}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">住所</dt>
+            <dt className="text-[color:rgb(var(--muted-fg))]">住所</dt>
             <dd>{values.contact?.address ?? '-'}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">電話番号</dt>
+            <dt className="text-[color:rgb(var(--muted-fg))]">電話番号</dt>
             <dd>{values.contact?.phone ?? '-'}</dd>
           </div>
           <div>
-            <dt className="text-gray-500">メール</dt>
+            <dt className="text-[color:rgb(var(--muted-fg))]">メール</dt>
             <dd>{values.contact?.email ?? '-'}</dd>
           </div>
         </dl>
@@ -326,8 +326,8 @@ function PreviewStep({
           {(values.education && values.education.length > 0 ? values.education : [{}]).map((item, index) => (
             <div key={index} className="rounded border border-dashed p-3">
               <div className="font-medium">{item?.school ?? '未入力'}</div>
-              <div className="text-xs text-gray-500">{item?.degree ?? '学位未入力'}</div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-[color:rgb(var(--muted-fg))]">{item?.degree ?? '学位未入力'}</div>
+              <div className="text-xs text-[color:rgb(var(--muted-fg))]">
                 {item?.start ?? '-'} ~ {item?.end ?? '-'}
               </div>
             </div>
@@ -340,12 +340,12 @@ function PreviewStep({
           type="button"
           onClick={onSubmitAll}
           disabled={submitting}
-          className="rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
+          className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[color:var(--color-accent-3)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-accent-1)] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {submitting ? '送信中…' : 'ドラフトを送信'}
         </button>
       </div>
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-[color:rgb(var(--muted-fg))]">
         送信するとドラフトのステータスが <code>submitted</code> になり、プレビュー画面が更新されます。（ID: {draftId}）
       </p>
     </div>
