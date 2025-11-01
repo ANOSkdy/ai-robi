@@ -15,8 +15,8 @@ interface WizardFrameProps {
 
 export default function WizardFrame({ title, description, accent, steps, currentStep, children, nav }: WizardFrameProps) {
   return (
-    <section className="relative mx-auto max-w-5xl">
-      <div className="relative overflow-hidden rounded-[3rem] border border-brand-green2/30 bg-paper p-6 shadow-[var(--shadow-soft)] sm:p-10">
+    <section className="relative mx-auto w-full max-w-screen-md px-4 sm:px-6">
+      <div className="relative overflow-hidden rounded-[2.5rem] border border-brand-green2/30 bg-paper p-6 shadow-[var(--shadow-soft)] sm:p-10">
         <span className="pointer-events-none absolute -top-32 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-gradient-to-b from-brand-green2/25 via-brand-earth1/25 to-transparent blur-3xl" />
         <span className="pointer-events-none absolute -bottom-20 right-10 h-52 w-52 rotate-[18deg] rounded-[4rem] bg-brand-earth1/20 blur-2xl" />
         <div className="relative grid gap-6">
@@ -28,6 +28,9 @@ export default function WizardFrame({ title, description, accent, steps, current
               <h1 className="text-3xl font-semibold tracking-tight text-brand-green1 md:text-[2.5rem]">
                 {title}
               </h1>
+              <div className="sr-only" aria-live="polite" role="status">
+                {title}
+              </div>
               <p className="text-base leading-relaxed text-brand-earth2/90">{description}</p>
             </div>
             {accent ? (

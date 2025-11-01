@@ -62,14 +62,14 @@ export default function HomePage() {
   ];
 
   return (
-    <div className="relative grid gap-14">
-      <div className="relative mx-auto max-w-3xl text-center">
+    <div className="mx-auto grid w-full max-w-screen-md gap-14 px-4 sm:px-6">
+      <div className="relative text-center">
         <span className="leaf-clip-a absolute -left-12 top-4 h-16 w-16 bg-brand-earth1/20" aria-hidden />
         <span className="leaf-clip-b absolute -right-10 bottom-2 h-12 w-12 bg-brand-green2/20" aria-hidden />
         <p className="inline-flex items-center gap-2 rounded-full border border-brand-green2/40 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-brand-green1">
           自然派ワークフロー
         </p>
-        <h1 className="mt-6 text-4xl font-semibold tracking-tight text-brand-green1 sm:text-[2.75rem]">
+        <h1 className="mt-6 text-[clamp(2.25rem,6vw,3rem)] font-semibold tracking-tight text-brand-green1">
           有機的なリズムで履歴書と職務経歴書を仕上げる
         </h1>
         <p className="mt-4 text-base leading-relaxed text-brand-earth2/90">

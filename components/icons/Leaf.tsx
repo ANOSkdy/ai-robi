@@ -1,8 +1,10 @@
-import React from 'react';
-export default function LeafIcon(props: React.SVGProps<SVGSVGElement>) {
+import type { SVGProps } from 'react';
+
+export default function LeafIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M19.9 4.1c.2.9.3 1.9.3 3 0 6.1-4.9 11-11 11-1.1 0-2.1-.1-3-.3 1.2 1.7 3.1 2.8 5.3 2.8 5 0 9-4 9-9 0-2.2-1.1-4.1-2.8-5.3ZM5 15c5.2-1.3 9.6-5.8 11-11C10.6 5.4 6.1 9.8 5 15Z"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden focusable={false} {...props}>
+      <path d="M3 12c0 5.523 3.477 9 9 9s9-3.477 9-9C21 5.477 12 3 12 3s-9 2.477-9 9Z" />
+      <path d="M12 22c-2-4-2-10 0-13" />
     </svg>
   );
 }
