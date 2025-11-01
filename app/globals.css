@@ -2,6 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  /* 日本語の改行最適化（単語途中でも落とせる） */
+  .text-anywhere {
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+  }
+
+  /* 見出しの行長バランス（対応ブラウザでは効く） */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* iOS ノッチの安全域 */
+  .safe-area-px {
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
 :root {
   --brand-green1: 27 81 45;
   --brand-green2: 127 176 105;

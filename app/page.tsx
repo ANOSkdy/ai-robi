@@ -49,50 +49,54 @@ export default function HomePage() {
   const cards = [
     {
       title: '履歴書の作成',
-      description: '基本情報から資格・スキルまで、自然派トーンで整えたガイドに沿って入力するだけ。途中保存にも対応。',
+      description: '基本情報から資格・スキルまで、自然派トーンで整えたガイドに沿って入力。途中保存にも対応。',
       href: '/resume',
       icon: <LeafIcon width={16} height={16} aria-hidden />,
     },
     {
       title: '職務経歴書の作成',
-      description: '実績やスキルをステップごとに整理し、印象的な職務経歴書を完成。過去のエピソードもやさしく捕まえます。',
+      description: 'プロジェクトや成果を一歩ずつ整理。フォーカスリングとコントラストを最適化したUIで書きやすく。',
       href: '/work-history',
       icon: <DropletIcon width={16} height={16} aria-hidden />,
     },
   ];
 
   return (
-    <div className="relative grid gap-14">
-      <div className="relative mx-auto max-w-3xl text-center">
-        <span className="leaf-clip-a absolute -left-12 top-4 h-16 w-16 bg-brand-earth1/20" aria-hidden />
-        <span className="leaf-clip-b absolute -right-10 bottom-2 h-12 w-12 bg-brand-green2/20" aria-hidden />
-        <p className="inline-flex items-center gap-2 rounded-full border border-brand-green2/40 bg-white/70 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-brand-green1">
-          自然派ワークフロー
-        </p>
-        <h1 className="mt-6 text-4xl font-semibold tracking-tight text-brand-green1 sm:text-[2.75rem]">
-          有機的なリズムで履歴書と職務経歴書を仕上げる
-        </h1>
-        <p className="mt-4 text-base leading-relaxed text-brand-earth2/90">
-          グリーンとアースのパレット、紙質のテクスチャ、手書きの区切りをまとったウィザードで、応募書類づくりを心地よくサポートします。
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-brand-green1">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2">
-            <SunIcon width={16} height={16} aria-hidden />
-            フォーカスリングとコントラストの最適化
-          </span>
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2">
-            <LeafIcon width={16} height={16} aria-hidden />
-            Step-by-step ナビゲーション
-          </span>
+    <div className="safe-area-px relative flex flex-col gap-14 pb-16">
+      <section className="relative">
+        <div className="container mx-auto max-w-screen-md px-4 text-center sm:px-6">
+          <span className="leaf-clip-a absolute -left-8 top-4 h-14 w-14 bg-brand-earth1/20 sm:-left-12 sm:h-16 sm:w-16" aria-hidden />
+          <span className="leaf-clip-b absolute -right-6 bottom-4 h-10 w-10 bg-brand-green2/20 sm:-right-10 sm:h-12 sm:w-12" aria-hidden />
+          <p className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-brand-green2/40 bg-white/80 px-4 text-anywhere text-xs font-semibold uppercase tracking-[0.28em] text-brand-green1">
+            自然派ワークフロー
+          </p>
+          <h1 className="mt-6 text-anywhere text-balance text-pretty font-semibold leading-tight text-brand-green1 [font-size:clamp(24px,6vw,40px)]">
+            有機的なリズムで履歴書と職務経歴書を仕上げる
+          </h1>
+          <p className="mt-4 text-anywhere text-pretty leading-relaxed text-brand-earth2/90 [font-size:clamp(14px,3.8vw,18px)]">
+            グリーンとアースのパレット、紙質のテクスチャ、手書きの区切りをまとったウィザードで、応募書類づくりを心地よくサポートします。
+          </p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-brand-green1">
+            <span className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-white/80 px-4 text-anywhere text-pretty">
+              <SunIcon width={16} height={16} aria-hidden />
+              フォーカスリングとコントラストの最適化
+            </span>
+            <span className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-white/80 px-4 text-anywhere text-pretty">
+              <LeafIcon width={16} height={16} aria-hidden />
+              Step-by-step ナビゲーション
+            </span>
+          </div>
         </div>
-      </div>
+      </section>
 
       <OrganicDivider variant="vine" className="mx-auto max-w-4xl" />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {cards.map((card) => (
-          <StampCard key={card.title} {...card} />
-        ))}
+      <div className="container mx-auto max-w-screen-sm md:max-w-screen-md px-4 sm:px-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+          {cards.map((card) => (
+            <StampCard key={card.title} {...card} />
+          ))}
+        </div>
       </div>
 
       <p className="text-center text-sm text-brand-earth2/80">
