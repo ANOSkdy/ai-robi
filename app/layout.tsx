@@ -4,7 +4,6 @@ import Link from 'next/link';
 import SkipLink from '@/components/a11y/SkipLink';
 import BackdropPattern from '@/components/deco/BackdropPattern';
 import TransitionProvider from '@/components/TransitionProvider';
-import './resume/theme.css';
 
 export const metadata: Metadata = {
   title: 'AI 履歴書・職務経歴書ジェネレーター',

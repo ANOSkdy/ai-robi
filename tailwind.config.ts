@@ -40,9 +40,12 @@ const config: ExtendedConfig = {
         accent1: 'var(--color-accent-1)',
         accent2: 'var(--color-accent-2)',
         accent3: 'var(--color-accent-3)',
+        'accent-1': 'var(--color-accent-1)',
+        'accent-2': 'var(--color-accent-2)',
+        'accent-3': 'var(--color-accent-3)',
       },
       boxShadow: {
-        soft: '0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.06)',
+        soft: 'var(--shadow-soft)',
       },
     },
   },
