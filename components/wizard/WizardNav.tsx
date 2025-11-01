@@ -1,4 +1,5 @@
 import type { HTMLAttributes } from 'react';
+import StepNav from '@/components/nav/StepNav';
 
 interface WizardNavProps extends HTMLAttributes<HTMLDivElement> {
   onBack: () => void;
@@ -10,6 +11,9 @@ interface WizardNavProps extends HTMLAttributes<HTMLDivElement> {
   backLabel?: string;
   validationMessage?: string;
 }
+
+const mergeClassName = (...classes: Array<string | undefined>) =>
+  classes.filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
 
 export default function WizardNav({
   onBack,
@@ -23,36 +27,24 @@ export default function WizardNav({
   className = '',
   ...props
 }: WizardNavProps) {
-  const classes = ['flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between', className]
-    .filter(Boolean)
-    .join(' ');
-
   return (
-    <div className={classes} {...props}>
-      <button
-        type="button"
-        onClick={onBack}
-        className="btn btn-secondary px-6 py-3 text-sm uppercase tracking-[0.18em]"
-      >
-        {isFirst ? `${backLabel}（ホームへ）` : backLabel}
-      </button>
-      <div className="flex flex-col items-end gap-3 text-right">
-        {!canProceed ? (
-          <p className="text-sm font-medium text-brand-earth2">
-            <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-earth1/20 text-brand-earth2">
-              !
-            </span>
-            {validationMessage}
-          </p>
-        ) : null}
-        <button
-          type="button"
-          onClick={onNext}
-          className="btn btn-primary px-8 py-3 text-sm uppercase tracking-[0.2em]"
+    <div className={mergeClassName('space-y-3', className)} {...props}>
+      {!canProceed ? (
+        <p
+          className="flex items-center gap-2 rounded-2xl bg-accent1/10 px-4 py-3 text-sm font-medium text-brand-earth2"
+          aria-live="polite"
         >
-          {isLast ? '完了' : nextLabel}
-        </button>
-      </div>
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-accent2/20 text-accent2">!</span>
+          {validationMessage}
+        </p>
+      ) : null}
+      <StepNav
+        onBack={onBack}
+        onNext={onNext}
+        isNextDisabled={!canProceed}
+        backLabel={isFirst ? `${backLabel}（ホームへ）` : backLabel}
+        nextLabel={isLast ? '完了' : nextLabel}
+      />
     </div>
   );
 }

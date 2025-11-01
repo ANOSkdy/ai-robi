@@ -1,8 +1,13 @@
-import React from 'react';
-export default function RecycleIcon(props: React.SVGProps<SVGSVGElement>) {
+import type { SVGProps } from 'react';
+
+export default function RecycleIcon(props: SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <path fill="currentColor" d="M7 8 9.5 4 12 8H9.9l.9 1.5-1.7 1-1.6-2.5H7Zm10 5-2.5 4L12 13h2.1l-.9-1.5 1.7-1 1.6 2.5H17ZM5 15h3v2H4l1-2Zm10-8h5l-1 2h-3v-2ZM8 19h8v2H7l1-2Z"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden focusable={false} {...props}>
+      <path d="m7 9 5-6 3 6" />
+      <path d="M6 15H3l1.5-3" />
+      <path d="m17 15-5 6-3-6" />
+      <path d="M18 9h3l-1.5 3" />
+      <path d="M8 22H4l1.5-3" />
     </svg>
   );
 }

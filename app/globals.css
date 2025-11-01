@@ -15,6 +15,16 @@
   --ring: var(--brand-earth1);
   --shadow-soft: 0 18px 45px -24px rgba(20, 46, 28, 0.25);
   --shadow-strong: 0 30px 80px -40px rgba(27, 81, 45, 0.28);
+  --color-base: #F9F9F9;
+  --color-primary: #4A90E2;
+  --color-secondary: #50E3C2;
+  --color-accent-1: #FFD166;
+  --color-accent-2: #F25F5C;
+  --color-accent-3: #9D59EC;
+}
+
+html {
+  color-scheme: light;
 }
 
 .bg-bg { background-color: rgb(var(--bg)); }
@@ -24,6 +34,28 @@
 .bg-brand-light { background-color: rgb(var(--brand-light)); }
 
 @layer base {
+  :root {
+    /* 新パレット（既存があれば上書きせず確認） */
+    --color-base: #F9F9F9;
+    --color-primary: #4A90E2;
+    --color-secondary: #50E3C2;
+    --color-accent-1: #FFD166;
+    --color-accent-2: #F25F5C;
+    --color-accent-3: #9D59EC;
+
+    /* 旧トークンを新に橋渡し（数値は rgb 用） */
+    --brand-light: 249 249 249;
+    --bg: 249 249 249;
+    --fg: 33 37 41;
+    --muted-fg: 109 117 125;
+    --border: 218 222 227;
+    --brand-earth1: 74 144 226;
+
+    /* 緑味のある影を中立へ */
+    --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-strong: 0 30px 80px -40px rgba(0, 0, 0, 0.28);
+  }
+
   *,
   *::before,
   *::after {
@@ -35,8 +67,9 @@
       radial-gradient(1200px 620px at 120% -10%, rgba(127, 176, 105, 0.16) 0%, transparent 65%),
       radial-gradient(880px 540px at -20% 5%, rgba(230, 170, 104, 0.18) 0%, transparent 70%),
       linear-gradient(135deg, rgba(243, 249, 227, 1) 0%, rgba(243, 249, 227, 0.92) 100%);
-    background-color: rgb(var(--bg));
+    background-color: var(--color-base);
     color: rgb(var(--fg));
+    -webkit-tap-highlight-color: transparent;
   }
   a {
     color: rgb(var(--brand-green2));
@@ -188,6 +221,36 @@ select.brand-field[aria-invalid='true'] {
 .validation-text {
   color: #8d2f2f;
   font-size: 0.875rem;
+}
+
+.focus-visible-only:focus-visible,
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.animate-fade-slide {
+  animation: fade-slide-in 220ms ease-out both;
+}
+
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @media print {
