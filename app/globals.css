@@ -30,17 +30,6 @@
   /* 必要ならダークテーマを段階的に整備（今回は未変更） */
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
 html {
   color-scheme: light;
 }
